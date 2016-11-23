@@ -190,9 +190,9 @@
             this.groupBox3.Controls.Add(this.button1);
             this.groupBox3.Controls.Add(this.button2);
             this.groupBox3.Controls.Add(this.UpdateSims);
-            this.groupBox3.Location = new System.Drawing.Point(18, 435);
+            this.groupBox3.Location = new System.Drawing.Point(250, 323);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(485, 80);
+            this.groupBox3.Size = new System.Drawing.Size(485, 73);
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "SIMULATOR CONFIGURATION";
@@ -201,9 +201,9 @@
             // 
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 16;
-            this.listBox1.Location = new System.Drawing.Point(250, 12);
+            this.listBox1.Location = new System.Drawing.Point(250, 25);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(259, 340);
+            this.listBox1.Size = new System.Drawing.Size(485, 292);
             this.listBox1.TabIndex = 14;
             // 
             // backgroundWorker1
@@ -214,7 +214,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(963, 527);
+            this.ClientSize = new System.Drawing.Size(771, 421);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);

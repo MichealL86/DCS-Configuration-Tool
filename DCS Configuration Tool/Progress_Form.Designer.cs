@@ -35,26 +35,28 @@
             // progressBar1
             // 
             this.progressBar1.Location = new System.Drawing.Point(12, 43);
+            this.progressBar1.MarqueeAnimationSpeed = 500;
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(485, 23);
-            this.progressBar1.Step = 1;
+            this.progressBar1.Size = new System.Drawing.Size(488, 23);
+            this.progressBar1.Step = 5;
             this.progressBar1.TabIndex = 14;
             this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
             // 
             // resultLabel
             // 
             this.resultLabel.AutoSize = true;
-            this.resultLabel.BackColor = System.Drawing.SystemColors.GradientInactiveCaption;
-            this.resultLabel.Location = new System.Drawing.Point(229, 69);
+            this.resultLabel.BackColor = System.Drawing.Color.Transparent;
+            this.resultLabel.Location = new System.Drawing.Point(12, 20);
+            this.resultLabel.MinimumSize = new System.Drawing.Size(300, 20);
             this.resultLabel.Name = "resultLabel";
-            this.resultLabel.Size = new System.Drawing.Size(0, 17);
+            this.resultLabel.Size = new System.Drawing.Size(300, 20);
             this.resultLabel.TabIndex = 16;
             // 
             // Progress_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(512, 79);
+            this.ClientSize = new System.Drawing.Size(512, 93);
             this.Controls.Add(this.resultLabel);
             this.Controls.Add(this.progressBar1);
             this.Name = "Progress_Form";

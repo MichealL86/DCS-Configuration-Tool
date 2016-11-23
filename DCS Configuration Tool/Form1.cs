@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Management;
 using System.ComponentModel;
 using System.Threading;
+using System.Drawing;
 
 namespace DCS_Configuration_Tool
 {
@@ -19,6 +20,7 @@ namespace DCS_Configuration_Tool
     public partial class Form1 : Form
     {
         DirectoryInfo rootDirectory;
+        public Progress_Form prgfrm = new Progress_Form();
 
         // String array to hold all processes for DCS
         string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
@@ -58,7 +60,7 @@ namespace DCS_Configuration_Tool
 
         string[] njctsAgs2IP = { "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.2", "172.21.5.3", "172.21.5.4" };
 
-        string[] desktopLinks;
+      
 
         PingReply reply;
         int ipCount;
@@ -89,8 +91,6 @@ namespace DCS_Configuration_Tool
             {
                 if (dirArr[i] == mainPath + oldDCS)
                 {
-                    MessageBox.Show(string.Format(dirArr[i]));
-
                     try
                     {
                         for (int j = 1; j < 5; j++)
@@ -134,8 +134,6 @@ namespace DCS_Configuration_Tool
 
                 if (dirArr[i] == newDCS)
                 {
-                    MessageBox.Show(string.Format(dirArr[i]));
-
                     try
                     {
                         for (int j = 1; j < 5; j++)
@@ -154,12 +152,11 @@ namespace DCS_Configuration_Tool
                         AddDirectorySecurity(aecHome + @"\DataFolder", Environment.UserName, FileSystemRights.FullControl,
                                                         AccessControlType.Allow);
 
-                        MessageBox.Show("Moved new DataFolder and ID folders to proper location");
                         if (!Directory.Exists(TransFldDir))
                         {
                             Directory.CreateDirectory(TransFldDir);
                         }
-                        else
+                        else if (Directory.Exists(TransFldDir))
                         {
                             MessageBox.Show("The TransFolder Directory Exists");
                         }
@@ -183,7 +180,6 @@ namespace DCS_Configuration_Tool
                 for (int i = 1; i < 5; i++)
                 {
                     System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
-                    MessageBox.Show("AircraftSettingsFile.csv is Up-To-Date");
                 }
             }
             else
@@ -197,7 +193,6 @@ namespace DCS_Configuration_Tool
             for (int i = 0; i < appName.Length; i++)
             {
                 delLink = Directory.GetFiles(srcDir, string.Format("{0}*.lnk", appName[i]));
-
 
                 foreach (string link in delLink)
                 {
@@ -372,86 +367,119 @@ namespace DCS_Configuration_Tool
             }
         }
 
-        private void updateApps()
+        public void paintProgress(string text)
         {
+            using (Graphics gr = prgfrm.progressBar1.CreateGraphics())
+            {
+                prgfrm.progressBar1.Refresh();
+                gr.DrawString(text,
+                    SystemFonts.DefaultFont,
+                    Brushes.Black,
+                    new PointF(prgfrm.progressBar1.Width / 2 - (gr.MeasureString(text,
+                                SystemFonts.DefaultFont).Width / 2.0F),
+                                prgfrm.progressBar1.Height / 2 - (gr.MeasureString(text,
+                                SystemFonts.DefaultFont).Height / 2.0F)));
+
+            }
+            Application.DoEvents();
+        }
+
+        class updateApps
+        {
+            public Progress_Form prgfrm = new Progress_Form();
+            DirectoryInfo rootDirectory;
             string aecPath = @"C:\";
-            string path = @"C:\Program Files (x86)\General Atomics";
+            static string path = @"C:\Program Files (x86)\General Atomics";
             string[] appDirs = Directory.GetDirectories(path);
+            string[] desktopLinks;
+            string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
+                                "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator",
+                                "UPSSimulator"};
+
+            string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "SCS_D", "ScsA", "Switch", "UPS",
+                                "AEC", "ROCS", "SNMP"};
+
             // Pattern for : name + eight numbers at the end
             string rmPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+(\\d{8})$");
             // Pattern for : name 
             string mvPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+\\\\?$");
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+           
 
-            // This is used to find all Folders that end in a date and delete them
-            foreach (string delDir in appDirs)
+            public updateApps()
             {
-                // Regular expression with the rmPattern to find numbers at the end of the title
-                Match rmDir = Regex.Match(delDir, rmPattern);
-
-                // While the regular expression rmDir is successful, 
-                //delete the current directory and files listed     
-                while (rmDir.Success)
+                // This is used to find all Folders that end in a date and delete them
+                foreach (string delDir in appDirs)
                 {
-                    //Delete the named folder and when set true delete everything within the folder
-                    Directory.Delete(rmDir.Value, true);
-                    // Look for the next matching folder
-                    rmDir = rmDir.NextMatch();
+                    // Regular expression with the rmPattern to find numbers at the end of the title
+                    Match rmDir = Regex.Match(delDir, rmPattern);
+
+                    this.prgfrm.resultLabel.Text = ("Deleting" + rmDir.ToString());
+
+                    // While the regular expression rmDir is successful, 
+                    //delete the current directory and files listed     
+                    while (rmDir.Success)
+                    {
+                        
+                        //Delete the named folder and when set true delete everything within the folder
+                        Directory.Delete(rmDir.Value, true);
+                        // Look for the next matching folder
+                        rmDir = rmDir.NextMatch();
+                    }
                 }
-            }
 
-            // Used to refresh the Directory listing to current status
-            string[] repDirs = Directory.GetDirectories(path);
-
-
-            // While the RegexEx mvDir is successful,
-            // rename the current folders used for the simulators
-            foreach (string repDir in repDirs)
-            {
-                // Regular expression with the mvPattern for currently used folders
-                Match mvDir = Regex.Match(repDir, mvPattern);
+                // Used to refresh the Directory listing to current status
+                string[] repDirs = Directory.GetDirectories(path);
 
 
-                while (mvDir.Success)
+                // While the RegexEx mvDir is successful,
+                // rename the current folders used for the simulators
+                foreach (string repDir in repDirs)
                 {
-                    //store a new string name of the folder with todays date appended to it
-                    string appName = string.Format("{0}_{1:MMddyyyy}", repDir, DateTime.Now);
-                    //Replace the old folder name with the new one
-                    Directory.Move(repDir, appName);
-                    // Find the next pattern matched folder
-                    mvDir = mvDir.NextMatch();
+                    // Regular expression with the mvPattern for currently used folders
+                    Match mvDir = Regex.Match(repDir, mvPattern);
+
+
+                    while (mvDir.Success)
+                    {
+                        //store a new string name of the folder with todays date appended to it
+                        string appName = string.Format("{0}_{1:MMddyyyy}", repDir, DateTime.Now);
+                        //Replace the old folder name with the new one
+                        Directory.Move(repDir, appName);
+                        // Find the next pattern matched folder
+                        mvDir = mvDir.NextMatch();
+                    }
                 }
+
+                // Used to refresh the Directory listing to current status
+                string[] cpDirs = Directory.GetDirectories(path);
+
+                // Used to search any given removable drive (USB) that is mounted
+                foreach (DriveInfo removableDrive in DriveInfo.GetDrives().Where(
+                             drive => drive.DriveType == DriveType.Removable && drive.IsReady))
+                {
+                    rootDirectory = removableDrive.RootDirectory;
+                    string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
+
+                    new Microsoft.VisualBasic.Devices.Computer().
+                        FileSystem.CopyDirectory(monitoredDirectory, path);
+                }
+
+                // Move old AEC's and ID folder to backup DCS folder
+                moveOldAec(cpDirs, aecPath, path);
+
+                // Move new AEC's, ID, and overwrite the old Datafolder to correct locations
+                mvNewAec(cpDirs, aecPath, path);
+
+                // Used to copy a newer ASF file to the C drive if the existing one is older
+                cpASF(rootDirectory.FullName, aecPath);
+
+                // Used to delete the current desktop shortcuts
+                DeleteShortcut(processName, desktopPath, desktopLinks);
+
+                // Used to create new shortcuts based on new executables
+                CreateShortcut(appProcess, path, cpDirs, mvPattern);
             }
-
-            // Used to refresh the Directory listing to current status
-            string[] cpDirs = Directory.GetDirectories(path);
-
-            // Used to search any given removable drive (USB) that is mounted
-            foreach (DriveInfo removableDrive in DriveInfo.GetDrives().Where(
-                         drive => drive.DriveType == DriveType.Removable && drive.IsReady))
-            {
-                rootDirectory = removableDrive.RootDirectory;
-                string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
-
-                new Microsoft.VisualBasic.Devices.Computer().
-                    FileSystem.CopyDirectory(monitoredDirectory, path);
-            }
-
-            // Move old AEC's and ID folder to backup DCS folder
-            moveOldAec(cpDirs, aecPath, path);
-
-            // Move new AEC's, ID, and overwrite the old Datafolder to correct locations
-            mvNewAec(cpDirs, aecPath, path);
-
-            // Used to copy a newer ASF file to the C drive if the existing one is older
-            cpASF(rootDirectory.FullName, aecPath);
-
-            // Used to delete the current desktop shortcuts
-            DeleteShortcut(processName, desktopPath, desktopLinks);
-
-            // Used to create new shortcuts based on new executables
-            CreateShortcut(appProcess, path, cpDirs, mvPattern);
-
         }
 
         public Form1()
@@ -472,31 +500,37 @@ namespace DCS_Configuration_Tool
                 backgroundWorker1.ReportProgress(i);
 
                 // Wait 100 milliseconds
-                Thread.Sleep(100);
+                Thread.Sleep(200);
+                
             }
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            Progress_Form prgfrm = new Progress_Form();
- 
+           
             // Change the value of the ProgressBar to the BackgroundWorker progress.
             prgfrm.progressBar1.Value = e.ProgressPercentage;
-            // Set the text
-            prgfrm.resultLabel.Text = (e.ProgressPercentage.ToString() + "%");
+            
+            int percent = (int)(((double)(prgfrm.progressBar1.Value - prgfrm.progressBar1.Minimum) / 
+                (double)(prgfrm.progressBar1.Maximum - prgfrm.progressBar1.Minimum)) * 100);       
+
+            paintProgress(percent.ToString() + "%");
         }
 
         public void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            Progress_Form prgfrm = new Progress_Form();
+            //Progress_Form prgfrm = new Progress_Form();
 
             if (e.Error != null)
             {
-                prgfrm.resultLabel.Text = "Error: " + e.Error.Message;
+                paintProgress("Error: " + e.Error.Message);
             }
             else
             {
-                prgfrm.resultLabel.Text = "Done!";
+                paintProgress("Done!");
+                // Wait 1000 milliseconds
+                Thread.Sleep(1000);
+                this.UpdateSims.Enabled = true;
                 prgfrm.Close();
                 backgroundWorker1.Dispose();
             }
@@ -506,12 +540,15 @@ namespace DCS_Configuration_Tool
         private void UpdateSimulators(object sender, EventArgs e)
         {
             
-            Progress_Form prgfrm = new Progress_Form();
+            //Progress_Form prgfrm = new Progress_Form();
             prgfrm.Show();
-            backgroundWorker1.RunWorkerAsync(10000);
             this.UpdateSims.Enabled = false;
-
-           // updateApps();
+            backgroundWorker1.WorkerReportsProgress = true;
+            //backgroundWorker1.DoWork += backgroundWorker1_DoWork;
+            //backgroundWorker1.ProgressChanged += backgroundWorker1_ProgressChanged;
+            //backgroundWorker1.RunWorkerCompleted += backgroundWorker1_RunWorkerCompleted;
+            backgroundWorker1.RunWorkerAsync(new updateApps());
+            
         }
 
         private void StopSimulators(object sender, EventArgs e)
