@@ -17,52 +17,67 @@ namespace DCS_Configuration_Tool
 
     public partial class Form1 : Form
     {
+        //
         DirectoryInfo rootDirectory;
         private updateApps update;
         public static Progress_Form prgfrm = new Progress_Form();
         
         
-        // String array to hold all processes for DCS
+        // String array to hold all application names for DCS
         string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
                                 "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator",
                                 "UPSSimulator"};
 
+        // String array to hold all process names for DCS
         string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "SCS_D", "ScsA", "Switch", "UPS",
                                 "AEC", "ROCS", "SNMP"};
 
+        // String array of IP addresses for HMAP LAN
         string[] hmapIP = {"172.24.4.1", "172.24.4.2", "172.24.4.3", "172.24.4.4", "172.24.4.5", "172.24.4.6",
                             "172.24.4.7", "172.24.4.8", "172.24.128.10", "172.24.128.11", "172.24.128.16",
                             "172.24.128.50", "172.24.128.51", "172.24.128.52", "172.24.129.10", "172.24.129.11",
                             "172.24.129.16", "172.24.129.50", "172.24.129.51", "172.24.129.52", "172.24.130.35",
                             "172.24.132.1", "172.24.132.2", "172.24.135.1", "172.24.135.2"};
 
+        // String array of IP addresses for AGS LAN
         string[] ags1IP = {"172.20.1.1", "172.20.1.2", "172.20.1.3", "172.20.1.4", "172.20.5.1", "172.20.5.2",
                             "172.20.5.3", "172.20.5.4"};
 
+        // String array of IP address for AGS LAN
         string[] ags2IP = { "172.21.1.1", "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.1", "172.21.5.2",
                             "172.21.5.3", "172.21.5.4" };
 
+        // String array of IP addresses for ADMACS LAN
         string[] admacsIp = { "172.16.4.10", "172.16.4.11", "172.16.4.222" };
 
+        // String array of IP addresses for HMAP LAN
         string[] jctsHmapIP = { "172.24.4.1", "172.24.4.2", "172.24.4.7", "172.24.128.10", "172.24.128.11",
                                 "172.24.128.16", "172.24.128.50", "172.24.128.51", "172.24.128.52",
                                 "172.24.129.52", "172.24.132.1", "172.24.132.2"};
 
+        // String array of IP addresses for AGS LAN
         string[] jctsAgs1IP = { "172.20.1.1", "172.20.5.1" };
 
+        // String array of IP addresses for AGS LAN
         string[] jctsAgs2IP = { "172.21.1.1", "172.21.5.1" };
 
+        // String array of IP addresses for HMAP LAN
         string[] njctsHmapIP = {"172.24.4.3", "172.24.4.4", "172.24.4.5", "172.24.4.6", "172.24.4.8", "172.24.129.10",
                                   "172.24.129.11", "172.24.129.16", "172.24.129.50", "172.24.129.51", "172.24.130.35",
                                    "172.24.132.2 ", "172.24.135.1"};
 
+        // String array of IP addresses for AGS LAN
         string[] njctsAgs1IP = { "172.20.1.2", "172.20.1.3", "172.20.1.4", "172.20.5.2", "172.20.5.3", "172.20.5.4" };
 
+        // String array of IP addresses for AGS LAN
         string[] njctsAgs2IP = { "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.2", "172.21.5.3", "172.21.5.4" };
 
+        // A PingReplay variable named reply
         PingReply reply;
+        // An integer variable named ipCount
         int ipCount;
 
+        // AddDirectory method is used to give the named directory certain permissions
         public static void AddDirectorySecurity(string FileName, string Account, FileSystemRights Rights,
                                                 AccessControlType ControlType)
         {
