@@ -31,6 +31,17 @@ namespace DCS_Configuration_Tool
 
         }
 
+        public string LabelText
+        {
+            get
+            {
+                return this.resultLabel.Text;
+            }
+            set
+            {
+                this.resultLabel.Text = value;
+            }
+        }
 
 
 

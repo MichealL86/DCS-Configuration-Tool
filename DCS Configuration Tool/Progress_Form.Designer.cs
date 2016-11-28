@@ -37,7 +37,7 @@
             this.progressBar1.Location = new System.Drawing.Point(12, 43);
             this.progressBar1.MarqueeAnimationSpeed = 500;
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(488, 23);
+            this.progressBar1.Size = new System.Drawing.Size(571, 23);
             this.progressBar1.Step = 5;
             this.progressBar1.TabIndex = 14;
             this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
@@ -56,7 +56,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(512, 93);
+            this.ClientSize = new System.Drawing.Size(595, 93);
             this.Controls.Add(this.resultLabel);
             this.Controls.Add(this.progressBar1);
             this.Name = "Progress_Form";

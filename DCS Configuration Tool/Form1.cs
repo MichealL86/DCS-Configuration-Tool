@@ -8,8 +8,6 @@ using System.Text.RegularExpressions;
 using IWshRuntimeLibrary;
 using System.Security.AccessControl;
 using System.Net.NetworkInformation;
-using System.Collections.Generic;
-using System.Management;
 using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
@@ -20,8 +18,10 @@ namespace DCS_Configuration_Tool
     public partial class Form1 : Form
     {
         DirectoryInfo rootDirectory;
-        public Progress_Form prgfrm = new Progress_Form();
-
+        private updateApps update;
+        public static Progress_Form prgfrm = new Progress_Form();
+        
+        
         // String array to hold all processes for DCS
         string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
                                 "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator",
@@ -60,8 +60,6 @@ namespace DCS_Configuration_Tool
 
         string[] njctsAgs2IP = { "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.2", "172.21.5.3", "172.21.5.4" };
 
-      
-
         PingReply reply;
         int ipCount;
 
@@ -82,167 +80,9 @@ namespace DCS_Configuration_Tool
             dInfo.SetAccessControl(dSecurity);
         }
 
-        public static void moveOldAec(string[] dirArr, string aecHome, string mainPath)
-        {
-            string oldDCS = string.Format(@"\DCS_Sim_{0:MMddyyyy}", DateTime.Now);
-            string userName = @"hmuser";
-
-            for (int i = 0; i < dirArr.Length; i++)
-            {
-                if (dirArr[i] == mainPath + oldDCS)
-                {
-                    try
-                    {
-                        for (int j = 1; j < 5; j++)
-                        {
-                            int count = j;
-                            Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
-                        }
-                        Directory.Move(aecHome + @"\ID", dirArr[i] + @"\ID");
-                        if (Directory.Exists(aecHome + string.Format(@"\Users\{0}\DataFolder", userName)))
-                        {
-                            Directory.Move(aecHome + string.Format(@"\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
-                        }
-                        else
-                        {
-                            MessageBox.Show("There is not a current DataFolder located at:" + aecHome +
-                                @"\Users\hmuser\");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        MessageBox.Show(e.Message);
-                    }
-                }
-            }
-        }
-
-        // Move new AEC 1-4, ID, Datafolder folders and create a transfolder directory if not 
-        // created
-        public static void mvNewAec(string[] dirArr, string aecHome, string mainPath)
-        {
-            string userName = @"hmuser";
-            string newDCS = string.Format(@"{0}\DCS_Sim", mainPath);
-            string dataFldDir = string.Format(@"{0}Users\{1}\DataFolder", aecHome, userName);
-            string TransFldDir = string.Format(@"{0}Users\{1}\TransFolder", aecHome, userName);
-
-            for (int i = 0; i < dirArr.Length; i++)
-            {
-                Regex rg = new Regex(@"_[0-9]{8}");
-
-                dirArr[i] = rg.Replace(dirArr[i], string.Empty);
-
-                if (dirArr[i] == newDCS)
-                {
-                    try
-                    {
-                        for (int j = 1; j < 5; j++)
-                        {
-                            int count = j;
-                            Directory.Move(dirArr[i] + @"\AEC" + count, aecHome + @"\AEC" + count);
-                            AddDirectorySecurity(aecHome + @"\AEC" + count, Environment.UserName, FileSystemRights.FullControl,
-                                                        AccessControlType.Allow);
-                        }
-
-                        Directory.Move(dirArr[i] + @"\ID", aecHome + @"\ID");
-                        AddDirectorySecurity(aecHome + @"\ID", Environment.UserName, FileSystemRights.FullControl,
-                                                        AccessControlType.Allow);
-
-                        Directory.Move(dirArr[i] + @"\DataFolder", dataFldDir);
-                        AddDirectorySecurity(aecHome + @"\DataFolder", Environment.UserName, FileSystemRights.FullControl,
-                                                        AccessControlType.Allow);
-
-                        if (!Directory.Exists(TransFldDir))
-                        {
-                            Directory.CreateDirectory(TransFldDir);
-                        }
-                        else if (Directory.Exists(TransFldDir))
-                        {
-                            MessageBox.Show("The TransFolder Directory Exists");
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        MessageBox.Show(e.Message);
-                    }
-                }
-            }
-        }
-
-        public static void cpASF(string srcName, string trgName)
-        {
-            string asfFile = Path.Combine(srcName, "AircraftSettingsFile.csv");
-            string asfLocation = Path.Combine(trgName, "AEC");
-
-            if (System.IO.File.Exists(asfFile))
-            {
-                for (int i = 1; i < 5; i++)
-                {
-                    System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
-                }
-            }
-            else
-            {
-                MessageBox.Show("AircraftSettingsFile.csv file missing on thumbdrive");
-            }
-        }
-
-        public static void DeleteShortcut(string[] appName, string srcDir, string[] delLink)
-        {
-            for (int i = 0; i < appName.Length; i++)
-            {
-                delLink = Directory.GetFiles(srcDir, string.Format("{0}*.lnk", appName[i]));
-
-                foreach (string link in delLink)
-                {
-                    System.IO.File.Delete(link);
-                }
-            }
-        }
-
-        public static void CreateShortcut(string[] appName, string mainPath, string[] gaDirs, string pattern)
-        {
-
-            string shortcutAddress;
-            object shDesktop = (object)"Desktop";
-            WshShell shell = new WshShell();
-            int count = 0;
-
-            foreach (string dir in gaDirs)
-            {
-                // Regular expression with the rmPattern to find numbers at the end of the title
-                Match checkDir = Regex.Match(dir, pattern);
-
-
-                while (checkDir.Success)
-                {
-
-                    if (appName[count] == "WindowsFormsApplication1")
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ISM_Sim" + ".lnk";
-                    }
-                    else if (appName[count] == "ModbusTestClient")
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\PickleSwitchSim" + ".lnk";
-                    }
-                    else
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + appName[count] + ".lnk";
-                    }
-
-                    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
-                    shortcut.WorkingDirectory = checkDir + @"\";
-                    shortcut.TargetPath = checkDir + @"\" + appName[count] + ".exe";
-                    shortcut.Save();
-                    checkDir = checkDir.NextMatch();
-                }
-                count++;
-            }
-        }
-
         public void EnableLAN(object interfaceName)
         {
+            listBox1.Items.Add("Enabling LAN " + interfaceName);
             ProcessStartInfo psi = new ProcessStartInfo("netsh", "interface set interface \"" + interfaceName +
                 "\" enable");
             Process p = new Process();
@@ -252,6 +92,7 @@ namespace DCS_Configuration_Tool
 
         public void DisableLAN(object interfaceName)
         {
+            listBox1.Items.Add("Disabling LAN " + interfaceName);
             ProcessStartInfo psi = new ProcessStartInfo("netsh", "interface set interface \"" + interfaceName +
                 "\" disable");
             Process p = new Process();
@@ -267,9 +108,9 @@ namespace DCS_Configuration_Tool
                 reply = checkPing.Send(ipAddress);
             }
             
-            catch(PingException)
+            catch(PingException pingError)
             {
-                
+                listBox1.Items.Add(pingError.Message);
             }
 
         }
@@ -281,10 +122,13 @@ namespace DCS_Configuration_Tool
                 ipCount = 0;
                 int badCount = 0;
                 var noConnection = new string[26];
+
+                listBox1.Items.Add(" Checking IP Connections..." + Environment.NewLine);
+
                 foreach (string ip in arrLAN)
                 {
-                    
                     checkIP(ip);
+                    listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
                     if (reply.Status.ToString() == "Success")
                     {
                         ipCount = ++ipCount;
@@ -299,22 +143,22 @@ namespace DCS_Configuration_Tool
 
                 if (ipCount == arrLAN.Length)
                 {
-                    MessageBox.Show("All IP addresses connected successfully");
+                    listBox1.Items.Add("All IP addresses connected successfully");
                 }
                 else if (ipCount != arrLAN.Length)
                 {
-                    MessageBox.Show("The following address connected unsuccessfullly");
+                    listBox1.Items.Add("The following address connected unsuccessfullly");
                     for (int i = 0; i < arrLAN.Length; i++)
                     {
                         string message = noConnection[i].ToString();
-                        MessageBox.Show("Could not establish connection to " + message);
+                        listBox1.Items.Add("Could not establish connection to " + message);
                     }
 
                 }
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException e)
             {
-             
+                listBox1.Items.Add(e.Message);
             }
 
         }
@@ -387,6 +231,7 @@ namespace DCS_Configuration_Tool
         class updateApps
         {
             public Progress_Form prgfrm = new Progress_Form();
+            private Form1 instance;
             DirectoryInfo rootDirectory;
             string aecPath = @"C:\";
             static string path = @"C:\Program Files (x86)\General Atomics";
@@ -404,23 +249,218 @@ namespace DCS_Configuration_Tool
             // Pattern for : name 
             string mvPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+\\\\?$");
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-           
 
-            public updateApps()
+            public void moveOldAec(string[] dirArr, string aecHome, string mainPath)
             {
+
+                string oldDCS = string.Format(@"\DCS_Sim_{0:MMddyyyy}", DateTime.Now);
+                string userName = @"hmuser";
+
+                for (int i = 0; i < dirArr.Length; i++)
+                {
+                    if (dirArr[i] == mainPath + oldDCS)
+                    {
+                        try
+                        {
+                            for (int j = 1; j < 5; j++)
+                            {
+                                int count = j;
+
+                                instance.listBox1.Items.Add("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
+                                prgfrm.LabelText = ("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
+                                Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                            }
+
+                            instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\ID");
+                            prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\ID");
+
+                            Directory.Move(aecHome + @"\ID", dirArr[i] + @"\ID");
+                            if (Directory.Exists(aecHome + string.Format(@"\Users\{0}\DataFolder", userName)))
+                            {
+                                prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
+                                Directory.Move(aecHome + string.Format(@"\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
+                            }
+                            else
+                            {
+                                MessageBox.Show("There is not a current DataFolder located at:" + aecHome +
+                                    @"\Users\hmuser\");
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            MessageBox.Show("The AEC Folders already exists in " + dirArr[i]);
+                        }
+                    }
+                }
+            }
+
+            // Move new AEC 1-4, ID, Datafolder folders and create a transfolder directory if not 
+            // created
+            public void mvNewAec(string[] dirArr, string aecHome, string mainPath)
+            {
+                string userName = @"hmuser";
+                string newDCS = string.Format(@"{0}\DCS_Sim", mainPath);
+                string dataFldDir = string.Format(@"{0}Users\{1}\DataFolder", aecHome, userName);
+                string TransFldDir = string.Format(@"{0}Users\{1}\TransFolder", aecHome, userName);
+
+                for (int i = 0; i < dirArr.Length; i++)
+                {
+                    Regex rg = new Regex(@"_[0-9]{8}");
+
+                    dirArr[i] = rg.Replace(dirArr[i], string.Empty);
+
+                    if (dirArr[i] == newDCS)
+                    {
+                        try
+                        {
+                            for (int j = 1; j < 5; j++)
+                            {
+                                int count = j;
+                                instance.listBox1.Items.Add("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
+                                prgfrm.LabelText = ("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
+                                Directory.Move(dirArr[i] + @"\AEC" + count, aecHome + @"\AEC" + count);
+                                instance.listBox1.Items.Add("Adding permissions to   " + aecHome + @"\AEC" + count);
+                                prgfrm.LabelText = ("Adding permissions to   " + aecHome + @"\AEC" + count);
+                                AddDirectorySecurity(aecHome + @"\AEC" + count, Environment.UserName, FileSystemRights.FullControl,
+                                                            AccessControlType.Allow);
+                            }
+
+                            instance.listBox1.Items.Add("Moving new ID Folder to  " + aecHome + @"\ID");
+                            prgfrm.LabelText = ("Moving new ID Folder to  " + aecHome + @"\ID");
+                            Directory.Move(dirArr[i] + @"\ID", aecHome + @"\ID");
+                            instance.listBox1.Items.Add("Adding permissions to  " + aecHome + @"\ID");
+                            prgfrm.LabelText = ("Adding permissions to  " + aecHome + @"\ID");
+                            AddDirectorySecurity(aecHome + @"\ID", Environment.UserName, FileSystemRights.FullControl,
+                                                            AccessControlType.Allow);
+
+                            instance.listBox1.Items.Add("Moving new DataFolder Folder to  " + dataFldDir);
+                            prgfrm.LabelText = ("Moving new DataFolder Folder to  " + dataFldDir);
+                            Directory.Move(dirArr[i] + @"\DataFolder", dataFldDir);
+                            instance.listBox1.Items.Add("Adding permissions to  " + dataFldDir);
+                            prgfrm.LabelText = ("Adding permissions to  " + dataFldDir);
+                            AddDirectorySecurity(aecHome + @"\DataFolder", Environment.UserName, FileSystemRights.FullControl,
+                                                            AccessControlType.Allow);
+
+                            if (!Directory.Exists(TransFldDir))
+                            {
+                                instance.listBox1.Items.Add("Creating new TransFolder at  " + TransFldDir);
+                                prgfrm.LabelText = ("Creating new TransFolder at  " + TransFldDir);
+                                Directory.CreateDirectory(TransFldDir);
+                            }
+                            else if (Directory.Exists(TransFldDir))
+                            {
+                                instance.listBox1.Items.Add("The TransFolder Directory Exists");
+                            }
+
+                        }
+                        catch (Exception e)
+                        {
+                            instance.listBox1.Items.Add(e.Message);
+                        }
+                    }
+                }
+            }
+
+            public void cpASF(string srcName, string trgName)
+            {
+                string asfFile = Path.Combine(srcName, "AircraftSettingsFile.csv");
+                string asfLocation = Path.Combine(trgName, "AEC");
+
+                if (System.IO.File.Exists(asfFile))
+                {
+                    for (int i = 1; i < 5; i++)
+                    {
+                        instance.listBox1.Items.Add("Copying new ASF files from thumb drive");
+                        prgfrm.LabelText = ("Copying new ASF files from thumb drive");
+                        System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
+                    }
+                }
+                else
+                {
+                    instance.listBox1.Items.Add("AircraftSettingsFile.csv file missing on thumbdrive");
+                }
+            }
+
+
+            public void CreateShortcut(string[] appName, string mainPath, string[] gaDirs, string pattern)
+            {
+
+                string shortcutAddress;
+                object shDesktop = (object)"Desktop";
+                WshShell shell = new WshShell();
+                int count = 0;
+
+                foreach (string dir in gaDirs)
+                {
+                    // Regular expression with the rmPattern to find numbers at the end of the title
+                    Match checkDir = Regex.Match(dir, pattern);
+
+
+                    while (checkDir.Success)
+                    {
+
+                        if (appName[count] == "WindowsFormsApplication1")
+                        {
+                            shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ISM_Sim" + ".lnk";
+                            prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
+                            instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
+                        }
+                        else if (appName[count] == "ModbusTestClient")
+                        {
+                            shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\PickleSwitchSim" + ".lnk";
+                            prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
+                            instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
+                        }
+                        else
+                        {
+                            shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + appName[count] + ".lnk";
+                            prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
+                            instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
+                        }
+
+                        IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+                        shortcut.WorkingDirectory = checkDir + @"\";
+                        shortcut.TargetPath = checkDir + @"\" + appName[count] + ".exe";
+                        shortcut.Save();
+                        checkDir = checkDir.NextMatch();
+                    }
+                    count++;
+                }
+            }
+
+            public void DeleteShortcut(string[] appName, string srcDir, string[] delLink)
+            {
+                for (int i = 0; i < appName.Length; i++)
+                {
+                    delLink = Directory.GetFiles(srcDir, string.Format("{0}*.lnk", appName[i]));
+
+                    foreach (string link in delLink)
+                    {
+                        instance.listBox1.Items.Add("Deleting " + link);
+                        prgfrm.LabelText = ("Deleting " + link);
+                        System.IO.File.Delete(link);
+                    }
+                }
+
+                prgfrm.LabelText = String.Empty;
+            }
+
+
+            public updateApps(Form1 instance)
+            {
+                this.instance = instance;
                 // This is used to find all Folders that end in a date and delete them
                 foreach (string delDir in appDirs)
                 {
                     // Regular expression with the rmPattern to find numbers at the end of the title
                     Match rmDir = Regex.Match(delDir, rmPattern);
 
-                    this.prgfrm.resultLabel.Text = ("Deleting" + rmDir.ToString());
-
                     // While the regular expression rmDir is successful, 
                     //delete the current directory and files listed     
                     while (rmDir.Success)
                     {
-                        
+                        instance.listBox1.Items.Add("Deleting " + delDir.ToString());
+                        prgfrm.LabelText = ("Deleting " + delDir.ToString());
                         //Delete the named folder and when set true delete everything within the folder
                         Directory.Delete(rmDir.Value, true);
                         // Look for the next matching folder
@@ -442,6 +482,8 @@ namespace DCS_Configuration_Tool
 
                     while (mvDir.Success)
                     {
+                        instance.listBox1.Items.Add("Creating Backup " + repDir.ToString());
+                        prgfrm.LabelText = ("Creating Backup " + repDir.ToString());
                         //store a new string name of the folder with todays date appended to it
                         string appName = string.Format("{0}_{1:MMddyyyy}", repDir, DateTime.Now);
                         //Replace the old folder name with the new one
@@ -485,7 +527,6 @@ namespace DCS_Configuration_Tool
         public Form1()
         {
             InitializeComponent();
-
             this.backgroundWorker1.WorkerReportsProgress = true;
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
@@ -539,15 +580,11 @@ namespace DCS_Configuration_Tool
 
         private void UpdateSimulators(object sender, EventArgs e)
         {
-            
-            //Progress_Form prgfrm = new Progress_Form();
+            update = new updateApps(this);
             prgfrm.Show();
             this.UpdateSims.Enabled = false;
             backgroundWorker1.WorkerReportsProgress = true;
-            //backgroundWorker1.DoWork += backgroundWorker1_DoWork;
-            //backgroundWorker1.ProgressChanged += backgroundWorker1_ProgressChanged;
-            //backgroundWorker1.RunWorkerCompleted += backgroundWorker1_RunWorkerCompleted;
-            backgroundWorker1.RunWorkerAsync(new updateApps());
+            backgroundWorker1.RunWorkerAsync(update);
             
         }
 
@@ -561,6 +598,7 @@ namespace DCS_Configuration_Tool
             {
                 if (appProcess.Contains(runningProcesses[i].ProcessName))
                 {
+                    listBox1.Items.Add("Stopping " + runningProcesses[i]);
                     runningProcesses[i].Kill();
                     runningProcesses[i].WaitForExit();
                 }
@@ -584,13 +622,12 @@ namespace DCS_Configuration_Tool
             int count = 0;
             foreach (string indexChecked in checkedListBox1.Items)
             {
-
-                MessageBox.Show("Index#: " + indexChecked.ToString() + ", is checked. Checked state is: " +
+                
+                listBox1.Items.Add(indexChecked.ToString() + ", is checked. Checked state is: " +
                                     checkedListBox1.GetItemCheckState(count).ToString() + ".");
 
                 if (checkedListBox1.GetItemChecked(count))
                 {
-                    Console.WriteLine(checkedListBox1.Items[count]);
                     EnableLAN(checkedListBox1.Items[count]);
                 }
 
@@ -686,9 +723,6 @@ namespace DCS_Configuration_Tool
             }
         }
 
-        private void resultLabel_Click(object sender, EventArgs e)
-        {
 
-        }
     }
 }
