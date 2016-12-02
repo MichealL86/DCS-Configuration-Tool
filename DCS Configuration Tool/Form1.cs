@@ -77,6 +77,20 @@ namespace DCS_Configuration_Tool
         // An integer variable named ipCount
         int ipCount;
 
+        string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
+        string fullBSCExeConfig = "<add key=\"CountAECs\" value=\"0\"/> ";
+        string jctsBSCExeConfig = "<add key=\"CountAECs\" value=\"1\"/> ";
+        string nonJctsBSCExeConfig = "<add key=\"CountAECs\" value=\"4\"/> ";
+        string jctsBSCAddKey = "<add key=\"0\" value=\"BSC1\"/>";
+        string nonJctsBSCAddKey = "<add key=\"0\" value=\"BSC0\"/>";
+
+        string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Simulator\DCSSimulator.exe.config";
+        string fullAECExeConfig = "<add key=\"CountAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECExeConfig = "<add key=\"CountAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string nonJctsAECExeconfig = "<add key=\"CountAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECAddKey = "<add key=\"0\" value=\"AEC1\"/>";
+        string nonJctsAECAddKey = "<add key=\"0\" value=\"AEC0\"/>";
+
         // AddDirectory method is used to give the named directory certain permissions
         public static void AddDirectorySecurity(string FileName, string Account, FileSystemRights Rights,
                                                 AccessControlType ControlType)
@@ -95,6 +109,7 @@ namespace DCS_Configuration_Tool
             dInfo.SetAccessControl(dSecurity);
         }
 
+        // Using a process to enable specified LANs
         public void EnableLAN(object interfaceName)
         {
             listBox1.Items.Add("Enabling LAN " + interfaceName);
@@ -105,6 +120,7 @@ namespace DCS_Configuration_Tool
             p.Start();
         }
 
+        // Using a process to disable specified LANs
         public void DisableLAN(object interfaceName)
         {
             listBox1.Items.Add("Disabling LAN " + interfaceName);
@@ -115,6 +131,7 @@ namespace DCS_Configuration_Tool
             p.Start();
         }
 
+        // Check to see if there is an IP connection
         public void checkIP(string ipAddress)
         {
             try
@@ -130,6 +147,7 @@ namespace DCS_Configuration_Tool
 
         }
 
+        // Let the user know the status of the IPs tested
         public void ipConnection(string[] arrLAN)
         {
             try
@@ -178,6 +196,7 @@ namespace DCS_Configuration_Tool
 
         }
 
+        // Using a process delete the specified IP addresses
         public void deleteIP(object interfaceName, string[] arrLAN)
         {
             foreach (string ip in arrLAN)
@@ -192,6 +211,7 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        // Using a process add the specified IP addresses
         public void addIP(object interfaceName, string[] arrLAN)
         {
             foreach (string ip in arrLAN)
@@ -226,6 +246,7 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        // Use paint graphics to create a progress bar that shows the status inside of it
         public void paintProgress(string text)
         {
             using (Graphics gr = prgfrm.progressBar1.CreateGraphics())
@@ -243,6 +264,7 @@ namespace DCS_Configuration_Tool
             Application.DoEvents();
         }
 
+        // Class used to remove old apps, backup current apps, and place the new apps in the proper locations
         class updateApps
         {
             public Progress_Form prgfrm = new Progress_Form();
@@ -396,7 +418,6 @@ namespace DCS_Configuration_Tool
                 }
             }
 
-
             public void CreateShortcut(string[] appName, string mainPath, string[] gaDirs, string pattern)
             {
 
@@ -548,6 +569,7 @@ namespace DCS_Configuration_Tool
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
         }
 
+        // While updateApps is do background work on the progress bar
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             for (int i = 1; i <= 100; i++)
@@ -561,6 +583,7 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        // Used to update the progress bar status
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
            
@@ -573,6 +596,7 @@ namespace DCS_Configuration_Tool
             paintProgress(percent.ToString() + "%");
         }
 
+        // Show the status of work when complete
         public void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             //Progress_Form prgfrm = new Progress_Form();
@@ -593,6 +617,7 @@ namespace DCS_Configuration_Tool
 
         }
 
+        // Calls updateApps to start background work (This is the update sim button)
         private void UpdateSimulators(object sender, EventArgs e)
         {
             update = new updateApps(this);
@@ -603,6 +628,7 @@ namespace DCS_Configuration_Tool
             
         }
 
+        // Use to stop all known Simulators running
         private void StopSimulators(object sender, EventArgs e)
         {
             // Place GetProcesses on a variable
@@ -620,6 +646,7 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        // Used to start all simulators
         private void StartSimulators(object sender, EventArgs e)
         {
             Process.Start("C:\\Program Files (x86)\\General Atomics\\DCS_Sim\\DCSSimulator.exe");
@@ -632,6 +659,7 @@ namespace DCS_Configuration_Tool
             Process.Start("C:\\Program Files (x86)\\General Atomics\\UPS_Sim\\UPSSimulator.exe");
         }
 
+        // Handles the LAN check boxes and either enables or disables through a called method
         private void SetLocalAreaNetwork(object sender, EventArgs e)
         {
             int count = 0;
@@ -654,11 +682,13 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        // Empty, not used
         private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
         }
 
+        // Actual work to delete and add IP addresses
         private void SetIpNetwork(object sender, EventArgs e)
         {
             if (radioButton1.Checked)
@@ -674,6 +704,20 @@ namespace DCS_Configuration_Tool
 
                 deleteIP(checkedListBox1.Items[3], admacsIp);
                 addIP(checkedListBox1.Items[3], admacsIp);
+
+                // Modify the .exe.config file for the BSC so that it works correctly
+                String BSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                BSCtext = BSCtext.Replace(jctsBSCExeConfig, fullBSCExeConfig);
+                BSCtext = BSCtext.Replace(nonJctsBSCExeConfig, fullBSCExeConfig);
+                BSCtext = BSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, BSCtext);
+
+                // Modify the .exe.config file for the DCS so that it works correctly
+                String AECtext = System.IO.File.ReadAllText(aecConfigPath);
+                AECtext = AECtext.Replace(jctsAECExeConfig, fullAECExeConfig);
+                AECtext = AECtext.Replace(nonJctsAECExeconfig, fullAECExeConfig);
+                AECtext = AECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, AECtext);
            
             }
             
@@ -705,6 +749,7 @@ namespace DCS_Configuration_Tool
             
         }
 
+        // Checks the specified network based on which radial button is specified
         private void CheckNetwork(object sender, EventArgs e)
         {
             try
