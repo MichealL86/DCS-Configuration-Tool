@@ -691,7 +691,7 @@ namespace DCS_Configuration_Tool
         // Actual work to delete and add IP addresses
         private void SetIpNetwork(object sender, EventArgs e)
         {
-            if (radioButton1.Checked)
+            if (radioButton1.Checked) // Full Setup
             {
                 deleteIP(checkedListBox1.Items[0], hmapIP);               
                 addIP(checkedListBox1.Items[0], hmapIP);
@@ -721,7 +721,7 @@ namespace DCS_Configuration_Tool
            
             }
             
-            else if (radioButton2.Checked)
+            else if (radioButton2.Checked) // Non-JCTS
             {
                 deleteIP(checkedListBox1.Items[0], hmapIP);
                 addIP(checkedListBox1.Items[0], jctsHmapIP);
@@ -734,8 +734,22 @@ namespace DCS_Configuration_Tool
 
                 deleteIP(checkedListBox1.Items[3], admacsIp);
                 addIP(checkedListBox1.Items[3], admacsIp);
+
+                // Modify the .exe.config file for the BSC so that it works correctly
+                String BSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                BSCtext = BSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
+                BSCtext = BSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
+                BSCtext = BSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, BSCtext);
+
+                // Modify the .exe.config file for the DCS so that it works correctly
+                String AECtext = System.IO.File.ReadAllText(aecConfigPath);
+                AECtext = AECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
+                AECtext = AECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
+                AECtext = AECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, AECtext);
             }
-            else if (radioButton3.Checked)
+            else if (radioButton3.Checked) // JCTS
             {
                 deleteIP(checkedListBox1.Items[0], hmapIP);
                 addIP(checkedListBox1.Items[0], njctsHmapIP);
@@ -745,6 +759,20 @@ namespace DCS_Configuration_Tool
 
                 deleteIP(checkedListBox1.Items[2], ags2IP);
                 addIP(checkedListBox1.Items[2], njctsAgs2IP);
+
+                // Modify the .exe.config file for the BSC so that it works correctly
+                String BSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                BSCtext = BSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                BSCtext = BSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                BSCtext = BSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, BSCtext);
+
+                // Modify the .exe.config file for the DCS so that it works correctly
+                String AECtext = System.IO.File.ReadAllText(aecConfigPath);
+                AECtext = AECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                AECtext = AECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
+                AECtext = AECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, AECtext);
             }
             
         }
