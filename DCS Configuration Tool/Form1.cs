@@ -11,9 +11,12 @@ using System.Net.NetworkInformation;
 using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
+using DCS_Configuration_Tool;
 
 namespace DCS_Configuration_Tool
 {
+
+
 
     public partial class Form1 : Form
     {
@@ -263,6 +266,7 @@ namespace DCS_Configuration_Tool
             }
             Application.DoEvents();
         }
+
 
         // Class used to remove old apps, backup current apps, and place the new apps in the proper locations
         class updateApps
@@ -586,12 +590,16 @@ namespace DCS_Configuration_Tool
         // Used to update the progress bar status
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-           
+
+            //This approach will cause some lag due to the progressive animation style
             // Change the value of the ProgressBar to the BackgroundWorker progress.
-            prgfrm.progressBar1.Value = e.ProgressPercentage;
+            // prgfrm.progressBar1.Value = e.ProgressPercentage;
+
+            // This approach will side step the lag by removing the progressive animation
+            prgfrm.progressBar1.SetProgressNoAnimation(e.ProgressPercentage);
             
-            int percent = (int)(((double)(prgfrm.progressBar1.Value - prgfrm.progressBar1.Minimum) / 
-                (double)(prgfrm.progressBar1.Maximum - prgfrm.progressBar1.Minimum)) * 100);       
+            int percent = (int)((prgfrm.progressBar1.Value - prgfrm.progressBar1.Minimum) /
+                (double)(prgfrm.progressBar1.Maximum - prgfrm.progressBar1.Minimum) * 100);       
 
             paintProgress(percent.ToString() + "%");
         }
@@ -812,5 +820,31 @@ namespace DCS_Configuration_Tool
         }
 
 
+    }
+
+    public static class ExtensionMethods
+    {
+        /// <summary>
+        /// Sets the progress bar value, without using 'Windows Aero' animation.
+        /// This is to work around a known WinForms issue where the progress bar
+        /// is slow to update.
+        /// </summary>
+        public static void SetProgressNoAnimation(this ProgressBar pb, int value)
+        {
+            // To get around the progressive animation, we need to move the 
+            // progress bar backwards.
+            if (value == pb.Maximum)
+            {
+                // Special case as value can't be set greater than Maximum.
+                pb.Maximum = value + 1;     // Temporarily Increase Maximum
+                pb.Value = value + 1;       // Move past
+                pb.Maximum = value;         // Reset maximum
+            }
+            else
+            {
+                pb.Value = value + 1;       // Move past
+            }
+            pb.Value = value;               // Move to correct value
+        }
     }
 }
