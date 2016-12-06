@@ -80,19 +80,21 @@ namespace DCS_Configuration_Tool
         // An integer variable named ipCount
         int ipCount;
 
+        static string path = @"C:\Program Files (x86)\General Atomics\";
+        string logName = string.Format("DCSLog_{0:MMddyyyy}.txt", DateTime.Now) ;
         string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
         string fullBSCExeConfig = "<add key=\"CountAECs\" value=\"0\"/> ";
-        string jctsBSCExeConfig = "<add key=\"CountAECs\" value=\"1\"/> ";
-        string nonJctsBSCExeConfig = "<add key=\"CountAECs\" value=\"4\"/> ";
-        string jctsBSCAddKey = "<add key=\"0\" value=\"BSC1\"/>";
-        string nonJctsBSCAddKey = "<add key=\"0\" value=\"BSC0\"/>";
+        string jctsBSCExeConfig = "<add key=\"CountAECs\" value=\"4\"/> ";
+        string nonJctsBSCExeConfig = "<add key=\"CountAECs\" value=\"1\"/> ";
+        string jctsBSCAddKey = "<add key=\"0\" value=\"BSC0\"/>";
+        string nonJctsBSCAddKey = "<add key=\"0\" value=\"BSC1\"/>";
 
-        string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Simulator\DCSSimulator.exe.config";
+        string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Sim\DCSSimulator.exe.config";
         string fullAECExeConfig = "<add key=\"CountAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string jctsAECExeConfig = "<add key=\"CountAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string nonJctsAECExeconfig = "<add key=\"CountAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string jctsAECAddKey = "<add key=\"0\" value=\"AEC1\"/>";
-        string nonJctsAECAddKey = "<add key=\"0\" value=\"AEC0\"/>";
+        string jctsAECExeConfig = "<add key=\"CountAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string nonJctsAECExeconfig = "<add key=\"CountAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECAddKey = "<add key=\"0\" value=\"AEC0\"/>";
+        string nonJctsAECAddKey = "<add key=\"0\" value=\"AEC1\"/>";
 
         // AddDirectory method is used to give the named directory certain permissions
         public static void AddDirectorySecurity(string FileName, string Account, FileSystemRights Rights,
@@ -204,7 +206,7 @@ namespace DCS_Configuration_Tool
         {
             foreach (string ip in arrLAN)
             {
-                
+                listBox1.Items.Add("Deleting " + arrLAN + " IP address " + ip);
                 ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", interfaceName, ip));
                 Process p = new Process();
                 p.StartInfo = psi;
@@ -219,6 +221,8 @@ namespace DCS_Configuration_Tool
         {
             foreach (string ip in arrLAN)
             {
+                listBox1.Items.Add("Adding " + arrLAN + " IP address " + ip);
+
                 if (ip == "172.20.1.1")
                 {
                     ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0 gateway=172.20.0.1", interfaceName, ip));
@@ -227,6 +231,16 @@ namespace DCS_Configuration_Tool
                     p.StartInfo.CreateNoWindow = true;
                     p.StartInfo.UseShellExecute = false;
                     p.Start();
+                }
+                else if (ip == "172.21.1.1")
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0", interfaceName, ip));
+                    Process p = new Process();
+                    p.StartInfo = psi;
+                    p.StartInfo.CreateNoWindow = true;
+                    p.StartInfo.UseShellExecute = false;
+                    p.Start();
+
                 }
                 else if (ip == "172.16.4.10")
                 {
@@ -265,6 +279,31 @@ namespace DCS_Configuration_Tool
 
             }
             Application.DoEvents();
+        }
+
+        public void logFile()
+        {
+            StreamWriter log;
+
+            if (!System.IO.File.Exists(path +logName))
+            {
+                log = new StreamWriter(path + logName);
+            }
+            else
+            {
+                log = System.IO.File.AppendText(path + logName);
+            }
+
+            // Write to the file:
+            log.WriteLine("Date Time:" + DateTime.Now);
+            foreach (string item in listBox1.Items)
+            {
+                log.WriteLine(item);
+            }
+
+            //Close the stream
+
+            log.Close();
         }
 
 
@@ -576,13 +615,16 @@ namespace DCS_Configuration_Tool
         // While updateApps is do background work on the progress bar
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+
+            
+
             for (int i = 1; i <= 100; i++)
             {            
                 // Report progress
                 backgroundWorker1.ReportProgress(i);
 
                 // Wait 100 milliseconds
-                Thread.Sleep(200);
+                Thread.Sleep(60);
                 
             }
         }
@@ -590,7 +632,6 @@ namespace DCS_Configuration_Tool
         // Used to update the progress bar status
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-
             //This approach will cause some lag due to the progressive animation style
             // Change the value of the ProgressBar to the BackgroundWorker progress.
             // prgfrm.progressBar1.Value = e.ProgressPercentage;
@@ -628,12 +669,13 @@ namespace DCS_Configuration_Tool
         // Calls updateApps to start background work (This is the update sim button)
         private void UpdateSimulators(object sender, EventArgs e)
         {
-            update = new updateApps(this);
-            prgfrm.Show();
+            
+            
             this.UpdateSims.Enabled = false;
             backgroundWorker1.WorkerReportsProgress = true;
+            prgfrm.Show();
             backgroundWorker1.RunWorkerAsync(update);
-            
+            update = new updateApps(this);
         }
 
         // Use to stop all known Simulators running
@@ -714,18 +756,20 @@ namespace DCS_Configuration_Tool
                 addIP(checkedListBox1.Items[3], admacsIp);
 
                 // Modify the .exe.config file for the BSC so that it works correctly
-                String BSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                BSCtext = BSCtext.Replace(jctsBSCExeConfig, fullBSCExeConfig);
-                BSCtext = BSCtext.Replace(nonJctsBSCExeConfig, fullBSCExeConfig);
-                BSCtext = BSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, BSCtext);
+                listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
+                String fullBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                fullBSCtext = fullBSCtext.Replace(jctsBSCExeConfig, fullBSCExeConfig);
+                fullBSCtext = fullBSCtext.Replace(nonJctsBSCExeConfig, fullBSCExeConfig);
+                fullBSCtext = fullBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, fullBSCtext);
 
                 // Modify the .exe.config file for the DCS so that it works correctly
-                String AECtext = System.IO.File.ReadAllText(aecConfigPath);
-                AECtext = AECtext.Replace(jctsAECExeConfig, fullAECExeConfig);
-                AECtext = AECtext.Replace(nonJctsAECExeconfig, fullAECExeConfig);
-                AECtext = AECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, AECtext);
+                listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
+                String fullAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                fullAECtext = fullAECtext.Replace(jctsAECExeConfig, fullAECExeConfig);
+                fullAECtext = fullAECtext.Replace(nonJctsAECExeconfig, fullAECExeConfig);
+                fullAECtext = fullAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, fullAECtext);
            
             }
             
@@ -744,18 +788,20 @@ namespace DCS_Configuration_Tool
                 addIP(checkedListBox1.Items[3], admacsIp);
 
                 // Modify the .exe.config file for the BSC so that it works correctly
-                String BSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                BSCtext = BSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
-                BSCtext = BSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
-                BSCtext = BSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, BSCtext);
+                listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
+                String nonJctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, nonJctsBSCtext);
 
                 // Modify the .exe.config file for the DCS so that it works correctly
-                String AECtext = System.IO.File.ReadAllText(aecConfigPath);
-                AECtext = AECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
-                AECtext = AECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
-                AECtext = AECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, AECtext);
+                listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
+                String nonJctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
+                nonJctsAECtext = nonJctsAECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
+                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
             }
             else if (radioButton3.Checked) // JCTS
             {
@@ -768,19 +814,24 @@ namespace DCS_Configuration_Tool
                 deleteIP(checkedListBox1.Items[2], ags2IP);
                 addIP(checkedListBox1.Items[2], njctsAgs2IP);
 
+                deleteIP(checkedListBox1.Items[3], admacsIp);
+                addIP(checkedListBox1.Items[3], admacsIp);
+
                 // Modify the .exe.config file for the BSC so that it works correctly
-                String BSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                BSCtext = BSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
-                BSCtext = BSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
-                BSCtext = BSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, BSCtext);
+                listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
+                String jctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                jctsBSCtext = jctsBSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, jctsBSCtext);
 
                 // Modify the .exe.config file for the DCS so that it works correctly
-                String AECtext = System.IO.File.ReadAllText(aecConfigPath);
-                AECtext = AECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
-                AECtext = AECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
-                AECtext = AECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, AECtext);
+                listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
+                String jctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                jctsAECtext = jctsAECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                jctsAECtext = jctsAECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
+                jctsAECtext = jctsAECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, jctsAECtext);
             }
             
         }
@@ -819,7 +870,15 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        private void logFile_Click(object sender, EventArgs e)
+        {
+            logFile();
+        }
 
+        private void deleteLog_Click(object sender, EventArgs e)
+        {
+            listBox1.Items.Clear();
+        }
     }
 
     public static class ExtensionMethods
