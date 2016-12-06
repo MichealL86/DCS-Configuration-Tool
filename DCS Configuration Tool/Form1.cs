@@ -218,6 +218,8 @@ namespace DCS_Configuration_Tool
                 p.StartInfo.UseShellExecute = false;
                 p.Start();
             }
+
+            Thread.Sleep(500);
         }
 
         // Using a process add the specified IP addresses
@@ -225,7 +227,7 @@ namespace DCS_Configuration_Tool
         {
             foreach (string ip in arrLAN)
             {
-                listBox1.Items.Add("Adding " + arrLAN + " IP address " + ip);
+                listBox1.Items.Add("Adding " + arrLAN.ToString() + " IP address " + ip);
 
                 if (ip == "172.20.1.1")
                 {
@@ -265,6 +267,8 @@ namespace DCS_Configuration_Tool
                     p.Start();
                 }
             }
+
+            Thread.Sleep(500);
         }
 
         // Use paint graphics to create a progress bar that shows the status inside of it
