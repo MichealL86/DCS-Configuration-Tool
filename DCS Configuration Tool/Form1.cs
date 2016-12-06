@@ -122,6 +122,8 @@ namespace DCS_Configuration_Tool
                 "\" enable");
             Process p = new Process();
             p.StartInfo = psi;
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.UseShellExecute = false;
             p.Start();
         }
 
@@ -133,6 +135,8 @@ namespace DCS_Configuration_Tool
                 "\" disable");
             Process p = new Process();
             p.StartInfo = psi;
+            p.StartInfo.CreateNoWindow = true;
+            p.StartInfo.UseShellExecute = false;
             p.Start();
         }
 
@@ -794,6 +798,7 @@ namespace DCS_Configuration_Tool
                 nonJctsBSCtext = nonJctsBSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
                 nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
                 System.IO.File.WriteAllText(bscConfigPath, nonJctsBSCtext);
+               
 
                 // Modify the .exe.config file for the DCS so that it works correctly
                 listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
