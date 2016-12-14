@@ -644,10 +644,11 @@ namespace DCS_Configuration_Tool
 
                         instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\ID");
                         prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\ID");
-
                         Directory.Move(aecHome + @"\ID", dirArr[i] + @"\ID");
+
                         if (Directory.Exists(aecHome + string.Format(@"\Users\{0}\DataFolder", userName)))
                         {
+                            instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
                             prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
                             Directory.Move(aecHome + string.Format(@"\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
                         }
