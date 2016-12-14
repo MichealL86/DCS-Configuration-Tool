@@ -361,11 +361,10 @@ namespace DCS_Configuration_Tool
         }
 
         // Calls updateApps to start background work (This is the update sim button)
-        [Dispatched(true)]
         private void UpdateSimulators(object sender, EventArgs e)
         {
-            
-            
+
+
             this.UpdateSims.Enabled = false;
             backgroundWorker1.WorkerReportsProgress = true;
             prgfrm.Show();
