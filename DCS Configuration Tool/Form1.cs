@@ -287,11 +287,14 @@ namespace DCS_Configuration_Tool
 
             // Write to the file:
             log.WriteLine("Date Time:" + DateTime.Now);
+            log.WriteLine(Environment.NewLine);
+            log.WriteLine("----------------------------------------------");
             foreach (string item in listBox1.Items)
             {
                 log.WriteLine(item);
             }
-
+            log.WriteLine("----------------------------------------------");
+            log.WriteLine(Environment.NewLine);
             //Close the stream
 
             log.Close();
@@ -656,7 +659,9 @@ namespace DCS_Configuration_Tool
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show("The AEC Folders already exists in " + dirArr[i]);
+                        instance.listBox1.Items.Add("The AEC Folders already exists in " + dirArr[i] + 
+                            Environment.NewLine + "Error Message: " + e.Message);
+
                     }
                 }
             }
