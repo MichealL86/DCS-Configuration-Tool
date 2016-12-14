@@ -44,8 +44,8 @@
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.button6 = new System.Windows.Forms.Button();
             this.button7 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -225,16 +225,6 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "LOG";
             // 
-            // button6
-            // 
-            this.button6.Location = new System.Drawing.Point(23, 33);
-            this.button6.Name = "button6";
-            this.button6.Size = new System.Drawing.Size(108, 23);
-            this.button6.TabIndex = 16;
-            this.button6.Text = "SAVE FILE";
-            this.button6.UseVisualStyleBackColor = true;
-            this.button6.Click += new System.EventHandler(this.logFile_Click);
-            // 
             // button7
             // 
             this.button7.Location = new System.Drawing.Point(137, 33);
@@ -244,6 +234,16 @@
             this.button7.Text = "DELETE  OUTPUT";
             this.button7.UseVisualStyleBackColor = true;
             this.button7.Click += new System.EventHandler(this.deleteLog_Click);
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(23, 33);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(108, 23);
+            this.button6.TabIndex = 16;
+            this.button6.Text = "SAVE FILE";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.logFile_Click);
             // 
             // Form1
             // 
@@ -282,10 +282,10 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
-        private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.Button button6;
+        public System.Windows.Forms.ListBox listBox1;
     }
 }
 
