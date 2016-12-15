@@ -20,8 +20,7 @@ namespace DCS_Configuration_Tool
 
     public partial class Form1 : Form
     {
-        //
-        DirectoryInfo rootDirectory;
+
         private updateApps update;
         public static Progress_Form prgfrm = new Progress_Form();
         
@@ -100,7 +99,8 @@ namespace DCS_Configuration_Tool
         // Using a process to enable specified LANs
         public void EnableLAN(object interfaceName)
         {
-            listBox1.Items.Add("Enabling LAN " + interfaceName);
+            listBox1.Items.Add("Enabling LAN " + interfaceName); 
+
             ProcessStartInfo psi = new ProcessStartInfo("netsh", "interface set interface \"" + interfaceName +
                 "\" enable");
             Process p = new Process();
@@ -636,21 +636,21 @@ namespace DCS_Configuration_Tool
                         for (int j = 1; j < 5; j++)
                         {
                             int count = j;
-
+                            
                             instance.listBox1.Items.Add("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
-                            prgfrm.LabelText = ("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
+                            prgfrm.resultLabel.Text = ("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
                             Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
                         }
 
                         instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\ID");
-                        prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\ID");
+                        prgfrm.resultLabel.Text = ("Moving old ID folder to  " + dirArr[i] + @"\ID");
                         Directory.Move(aecHome + @"\ID", dirArr[i] + @"\ID");
 
                         if (Directory.Exists(aecHome + string.Format(@"\Users\{0}\DataFolder", userName)))
                         {
-                            instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
-                            prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
-                            Directory.Move(aecHome + string.Format(@"\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
+                            instance.listBox1.Items.Add("Moving old DataFolder to  " + dirArr[i] + @"\DataFolder");
+                            prgfrm.resultLabel.Text = ("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
+                            Directory.Move(string.Format(@"C:\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
                         }
                         else
                         {
@@ -691,34 +691,34 @@ namespace DCS_Configuration_Tool
                         {
                             int count = j;
                             instance.listBox1.Items.Add("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
-                            prgfrm.LabelText = ("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
+                            prgfrm.resultLabel.Text = ("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
                             Directory.Move(dirArr[i] + @"\AEC" + count, aecHome + @"\AEC" + count);
                             instance.listBox1.Items.Add("Adding permissions to   " + aecHome + @"\AEC" + count);
-                            prgfrm.LabelText = ("Adding permissions to   " + aecHome + @"\AEC" + count);
+                            prgfrm.resultLabel.Text = ("Adding permissions to   " + aecHome + @"\AEC" + count);
                             AddDirectorySecurity(aecHome + @"\AEC" + count, Environment.UserName, FileSystemRights.FullControl,
                                                         AccessControlType.Allow);
                         }
 
                         instance.listBox1.Items.Add("Moving new ID Folder to  " + aecHome + @"\ID");
-                        prgfrm.LabelText = ("Moving new ID Folder to  " + aecHome + @"\ID");
+                        prgfrm.resultLabel.Text = ("Moving new ID Folder to  " + aecHome + @"\ID");
                         Directory.Move(dirArr[i] + @"\ID", aecHome + @"\ID");
                         instance.listBox1.Items.Add("Adding permissions to  " + aecHome + @"\ID");
-                        prgfrm.LabelText = ("Adding permissions to  " + aecHome + @"\ID");
+                        prgfrm.resultLabel.Text = ("Adding permissions to  " + aecHome + @"\ID");
                         AddDirectorySecurity(aecHome + @"\ID", Environment.UserName, FileSystemRights.FullControl,
                                                         AccessControlType.Allow);
 
                         instance.listBox1.Items.Add("Moving new DataFolder Folder to  " + dataFldDir);
-                        prgfrm.LabelText = ("Moving new DataFolder Folder to  " + dataFldDir);
+                        prgfrm.resultLabel.Text = ("Moving new DataFolder Folder to  " + dataFldDir);
                         Directory.Move(dirArr[i] + @"\DataFolder", dataFldDir);
                         instance.listBox1.Items.Add("Adding permissions to  " + dataFldDir);
-                        prgfrm.LabelText = ("Adding permissions to  " + dataFldDir);
+                        prgfrm.resultLabel.Text = ("Adding permissions to  " + dataFldDir);
                         AddDirectorySecurity(aecHome + @"\DataFolder", Environment.UserName, FileSystemRights.FullControl,
                                                         AccessControlType.Allow);
 
                         if (!Directory.Exists(TransFldDir))
                         {
                             instance.listBox1.Items.Add("Creating new TransFolder at  " + TransFldDir);
-                            prgfrm.LabelText = ("Creating new TransFolder at  " + TransFldDir);
+                            prgfrm.resultLabel.Text = ("Creating new TransFolder at  " + TransFldDir);
                             Directory.CreateDirectory(TransFldDir);
                         }
                         else if (Directory.Exists(TransFldDir))
@@ -745,7 +745,7 @@ namespace DCS_Configuration_Tool
                 for (int i = 1; i < 5; i++)
                 {
                     instance.listBox1.Items.Add("Copying new ASF files from thumb drive");
-                    prgfrm.LabelText = ("Copying new ASF files from thumb drive");
+                    prgfrm.resultLabel.Text = ("Copying new ASF files from thumb drive");
                     System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
                 }
             }
@@ -775,19 +775,19 @@ namespace DCS_Configuration_Tool
                     if (appName[count] == "WindowsFormsApplication1")
                     {
                         shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ISM_Sim" + ".lnk";
-                        prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
+                        prgfrm.resultLabel.Text = ("Created shortcut " + shortcutAddress);
                         instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
                     }
                     else if (appName[count] == "ModbusTestClient")
                     {
                         shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\PickleSwitchSim" + ".lnk";
-                        prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
+                        prgfrm.resultLabel.Text = ("Created shortcut " + shortcutAddress);
                         instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
                     }
                     else
                     {
                         shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + appName[count] + ".lnk";
-                        prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
+                        prgfrm.resultLabel.Text = ("Created shortcut " + shortcutAddress);
                         instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
                     }
 
@@ -810,12 +810,12 @@ namespace DCS_Configuration_Tool
                 foreach (string link in delLink)
                 {
                     instance.listBox1.Items.Add("Deleting " + link);
-                    prgfrm.LabelText = ("Deleting " + link);
+                    prgfrm.resultLabel.Text = ("Deleting " + link);
                     System.IO.File.Delete(link);
                 }
             }
 
-            prgfrm.LabelText = String.Empty;
+            prgfrm.resultLabel.Text = String.Empty;
         }
 
 
@@ -833,7 +833,7 @@ namespace DCS_Configuration_Tool
                 while (rmDir.Success)
                 {
                     instance.listBox1.Items.Add("Deleting " + delDir.ToString());
-                    prgfrm.LabelText = ("Deleting " + delDir.ToString());
+                    prgfrm.resultLabel.Text = ("Deleting " + delDir.ToString());
                     //Delete the named folder and when set true delete everything within the folder
                     Directory.Delete(rmDir.Value, true);
                     // Look for the next matching folder
@@ -856,7 +856,7 @@ namespace DCS_Configuration_Tool
                 while (mvDir.Success)
                 {
                     instance.listBox1.Items.Add("Creating Backup " + repDir.ToString());
-                    prgfrm.LabelText = ("Creating Backup " + repDir.ToString());
+                    prgfrm.resultLabel.Text = ("Creating Backup " + repDir.ToString());
                     //store a new string name of the folder with todays date appended to it
                     string appName = string.Format("{0}_{1:MMddyyyy}", repDir, DateTime.Now);
                     //Replace the old folder name with the new one
