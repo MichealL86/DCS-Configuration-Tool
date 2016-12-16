@@ -172,7 +172,7 @@ namespace DCS_Configuration_Tool
                 }
                 else if (ipCount != arrLAN.Length)
                 {
-                    listBox1.Items.Add("The following address connected unsuccessfullly");
+                    listBox1.Items.Add("The following address connected unsuccessfully");
                     for (int i = 0; i < arrLAN.Length; i++)
                     {
                         string message = noConnection[i].ToString();
@@ -183,7 +183,9 @@ namespace DCS_Configuration_Tool
             }
             catch (NullReferenceException e)
             {
-                listBox1.Items.Add(e.Message);
+                listBox1.Items.Add("If address '172.16.4.222' make sure ScsAdmacsSim is on and running with SCS");
+                listBox1.Items.Add("or ignore the unsuccessful connection");
+                listBox1.Items.Add("For all other addresses check to make sure the address exist within the specified LAN");
             }
 
         }
