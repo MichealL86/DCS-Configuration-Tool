@@ -442,17 +442,33 @@ namespace DCS_Configuration_Tool
         {
             if (radioButton1.Checked) // Full Setup
             {
+                listBox1.Items.Add("Healthmap IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[0], hmapIP);               
                 addIP(checkedListBox1.Items[0], hmapIP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("AGS 1 IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[1], ags1IP);
                 addIP(checkedListBox1.Items[1], ags1IP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("AGS 2 IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[2], ags2IP);
                 addIP(checkedListBox1.Items[2], ags2IP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("ADMACS IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[3], admacsIp);
                 addIP(checkedListBox1.Items[3], admacsIp);
+
+                listBox1.Items.Add(String.Empty);
 
                 // Modify the .exe.config file for the BSC so that it works correctly
                 listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
@@ -472,19 +488,35 @@ namespace DCS_Configuration_Tool
            
             }
             
-            else if (radioButton2.Checked) // Non-JCTS
+            else if (radioButton2.Checked) // JCTS
             {
+                listBox1.Items.Add("JCTS Healthmap IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[0], hmapIP);
                 addIP(checkedListBox1.Items[0], jctsHmapIP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("JCTS AGS 1 IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[1], ags1IP);
                 addIP(checkedListBox1.Items[1], jctsAgs1IP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("JCTS AGS 2 IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[2], ags2IP);
                 addIP(checkedListBox1.Items[2], jctsAgs2IP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("ADMACS IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[3], admacsIp);
                 addIP(checkedListBox1.Items[3], admacsIp);
+
+                listBox1.Items.Add(String.Empty);
 
                 // Modify the .exe.config file for the BSC so that it works correctly
                 listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
@@ -503,19 +535,35 @@ namespace DCS_Configuration_Tool
                 nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
                 System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
             }
-            else if (radioButton3.Checked) // JCTS
+            else if (radioButton3.Checked) // NON-JCTS
             {
+                listBox1.Items.Add("NON-JCTS Healthmap IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[0], hmapIP);
                 addIP(checkedListBox1.Items[0], njctsHmapIP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("NON-JCTS AGS 1 IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[1], ags1IP);
                 addIP(checkedListBox1.Items[1], njctsAgs1IP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("NON-JCTS AGS2 IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[2], ags2IP);
                 addIP(checkedListBox1.Items[2], njctsAgs2IP);
 
+                listBox1.Items.Add(String.Empty);
+
+                listBox1.Items.Add("ADMACS IP configuration:");
+                listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[3], admacsIp);
                 addIP(checkedListBox1.Items[3], admacsIp);
+
+                listBox1.Items.Add(String.Empty);
 
                 // Modify the .exe.config file for the BSC so that it works correctly
                 listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
