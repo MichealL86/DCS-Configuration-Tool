@@ -50,7 +50,7 @@ namespace DCS_Configuration_Tool
                             "172.21.5.3", "172.21.5.4" };
 
         // String array of IP addresses for ADMACS LAN
-        string[] admacsIp = { "172.16.4.10", "172.16.4.11", "172.16.4.222" };
+        string[] admacsIp = { "172.16.4.10", "172.16.4.11" };
 
         // String array of IP addresses for HMAP LAN
         string[] jctsHmapIP = { "172.24.4.1", "172.24.4.2", "172.24.4.7", "172.24.128.10", "172.24.128.11",
