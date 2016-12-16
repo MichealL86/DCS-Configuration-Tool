@@ -371,8 +371,8 @@ namespace DCS_Configuration_Tool
             this.UpdateSims.Enabled = false;
             backgroundWorker1.WorkerReportsProgress = true;
             prgfrm.Show();
-            backgroundWorker1.RunWorkerAsync(update);
-            update = new updateApps(this);
+            backgroundWorker1.RunWorkerAsync(update = new updateApps(this));
+            
         }
 
         // Use to stop all known Simulators running
@@ -590,8 +590,8 @@ namespace DCS_Configuration_Tool
         string[] appDirs = Directory.GetDirectories(path);
         string[] desktopLinks;
         string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
-                                "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator",
-                                "UPSSimulator"};
+                                "ModbusTestClient", "ScsAdmacsSim",  "SwitchSimulator",
+                                "UPSSimulator", "ScsDisplay", };
 
         string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "SCS_D", "ScsA", "Switch", "UPS",
                                 "AEC", "ROCS", "SNMP"};
