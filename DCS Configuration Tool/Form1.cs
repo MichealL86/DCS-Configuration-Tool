@@ -650,7 +650,7 @@ namespace DCS_Configuration_Tool
                         {
                             instance.listBox1.Items.Add("Moving old DataFolder to  " + dirArr[i] + @"\DataFolder");
                             prgfrm.resultLabel.Text = ("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
-                            Directory.Move(string.Format(@"C:\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
+                            Directory.Delete(string.Format(@"C:\Users\{0}\DataFolder", userName), true);
                         }
                         else
                         {
@@ -712,7 +712,7 @@ namespace DCS_Configuration_Tool
                         Directory.Move(dirArr[i] + @"\DataFolder", dataFldDir);
                         instance.listBox1.Items.Add("Adding permissions to  " + dataFldDir);
                         prgfrm.resultLabel.Text = ("Adding permissions to  " + dataFldDir);
-                        AddDirectorySecurity(aecHome + @"\DataFolder", Environment.UserName, FileSystemRights.FullControl,
+                        AddDirectorySecurity(dataFldDir, Environment.UserName, FileSystemRights.FullControl,
                                                         AccessControlType.Allow);
 
                         if (!Directory.Exists(TransFldDir))
