@@ -444,7 +444,8 @@ namespace DCS_Configuration_Tool
             {
                 listBox1.Items.Add("Healthmap IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
-                deleteIP(checkedListBox1.Items[0], hmapIP);               
+                deleteIP(checkedListBox1.Items[0], hmapIP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[0], hmapIP);
 
                 listBox1.Items.Add(String.Empty);
@@ -452,6 +453,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("AGS 1 IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[1], ags1IP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[1], ags1IP);
 
                 listBox1.Items.Add(String.Empty);
@@ -459,6 +461,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("AGS 2 IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[2], ags2IP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[2], ags2IP);
 
                 listBox1.Items.Add(String.Empty);
@@ -466,6 +469,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("ADMACS IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[3], admacsIp);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[3], admacsIp);
 
                 listBox1.Items.Add(String.Empty);
@@ -485,7 +489,9 @@ namespace DCS_Configuration_Tool
                 fullAECtext = fullAECtext.Replace(nonJctsAECExeconfig, fullAECExeConfig);
                 fullAECtext = fullAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
                 System.IO.File.WriteAllText(aecConfigPath, fullAECtext);
-           
+
+                listBox1.Items.Add(String.Empty);
+
             }
             
             else if (radioButton2.Checked) // JCTS
@@ -493,6 +499,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("JCTS Healthmap IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[0], hmapIP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[0], jctsHmapIP);
 
                 listBox1.Items.Add(String.Empty);
@@ -500,6 +507,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("JCTS AGS 1 IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[1], ags1IP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[1], jctsAgs1IP);
 
                 listBox1.Items.Add(String.Empty);
@@ -507,6 +515,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("JCTS AGS 2 IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[2], ags2IP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[2], jctsAgs2IP);
 
                 listBox1.Items.Add(String.Empty);
@@ -514,6 +523,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("ADMACS IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[3], admacsIp);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[3], admacsIp);
 
                 listBox1.Items.Add(String.Empty);
@@ -534,12 +544,15 @@ namespace DCS_Configuration_Tool
                 nonJctsAECtext = nonJctsAECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
                 nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
                 System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
+
+                listBox1.Items.Add(String.Empty);
             }
             else if (radioButton3.Checked) // NON-JCTS
             {
                 listBox1.Items.Add("NON-JCTS Healthmap IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[0], hmapIP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[0], njctsHmapIP);
 
                 listBox1.Items.Add(String.Empty);
@@ -547,6 +560,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("NON-JCTS AGS 1 IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[1], ags1IP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[1], njctsAgs1IP);
 
                 listBox1.Items.Add(String.Empty);
@@ -554,6 +568,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("NON-JCTS AGS2 IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[2], ags2IP);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[2], njctsAgs2IP);
 
                 listBox1.Items.Add(String.Empty);
@@ -561,6 +576,7 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("ADMACS IP configuration:");
                 listBox1.Items.Add("---------------------------------------------------------------------");
                 deleteIP(checkedListBox1.Items[3], admacsIp);
+                listBox1.Items.Add(String.Empty);
                 addIP(checkedListBox1.Items[3], admacsIp);
 
                 listBox1.Items.Add(String.Empty);
@@ -580,6 +596,8 @@ namespace DCS_Configuration_Tool
                 jctsAECtext = jctsAECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
                 jctsAECtext = jctsAECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
                 System.IO.File.WriteAllText(aecConfigPath, jctsAECtext);
+
+                listBox1.Items.Add(String.Empty);
             }
             
         }
@@ -592,23 +610,81 @@ namespace DCS_Configuration_Tool
 
                 if (radioButton1.Checked)
                 {
+                    listBox1.Items.Add("Healthmap IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(hmapIP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("AGS 1 IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(ags1IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("AGS 2 IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(ags2IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("ADMACS IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(admacsIp);
+
+                    listBox1.Items.Add(String.Empty);
                 } 
                 else if (radioButton2.Checked)
                 {
+                    listBox1.Items.Add("JCTS Healthmap IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(jctsHmapIP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("JCTS AGS 1 IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(jctsAgs1IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("JCTS AGS 2 IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(jctsAgs2IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("JCTS ADMACS IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(admacsIp);
+
+                    listBox1.Items.Add(String.Empty);
                 }                
                 else if (radioButton3.Checked)
                 {
+                    listBox1.Items.Add("NON-JCTS Healthmap IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(njctsHmapIP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("NON-JCTS AGS 1 IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(njctsAgs1IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("NON-JCTS AGS 2 IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
                     ipConnection(njctsAgs2IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("ADMACS IP check:");
+                    listBox1.Items.Add("---------------------------------------------------------------------");
+                    ipConnection(admacsIp);
+
+                    listBox1.Items.Add(String.Empty);
                 }
                 
             }
