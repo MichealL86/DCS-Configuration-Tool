@@ -82,18 +82,18 @@ namespace DCS_Configuration_Tool
         static string path = @"C:\Program Files (x86)\General Atomics\";
         string logName = string.Format("DCSLog_{0:MMddyyyy}.txt", DateTime.Now) ;
         string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
-        string fullBSCExeConfig = "<add key=\"CountAECs\" value=\"0\"/> ";
-        string jctsBSCExeConfig = "<add key=\"CountAECs\" value=\"4\"/> ";
-        string nonJctsBSCExeConfig = "<add key=\"CountAECs\" value=\"1\"/> ";
-        string jctsBSCAddKey = "<add key=\"0\" value=\"BSC0\"/>";
-        string nonJctsBSCAddKey = "<add key=\"0\" value=\"BSC1\"/>";
+        string fullBSCExeConfig = "     <add key=\"CountAECs\" value=\"0\"/> ";
+        string jctsBSCExeConfig = "     <add key=\"CountAECs\" value=\"4\"/> ";
+        string nonJctsBSCExeConfig = "      <add key=\"CountAECs\" value=\"1\"/> ";
+        string jctsBSCAddKey = "        <add key=\"0\" value=\"BSC0\"/>";
+        string nonJctsBSCAddKey = "     <add key=\"0\" value=\"BSC1\"/>";
 
         string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Sim\DCSSimulator.exe.config";
-        string fullAECExeConfig = "<add key=\"CountAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string jctsAECExeConfig = "<add key=\"CountAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string nonJctsAECExeconfig = "<add key=\"CountAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string jctsAECAddKey = "<add key=\"0\" value=\"AEC0\"/>";
-        string nonJctsAECAddKey = "<add key=\"0\" value=\"AEC1\"/>";
+        string fullAECExeConfig = "     <add key=\"CountAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECExeConfig = "     <add key=\"CountAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string nonJctsAECExeconfig = "      <add key=\"CountAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECAddKey = "    <add key=\"0\" value=\"AEC0\"/>";
+        string nonJctsAECAddKey = "     <add key=\"0\" value=\"AEC1\"/>";
 
   
         // Using a process to enable specified LANs
@@ -538,20 +538,20 @@ namespace DCS_Configuration_Tool
 
                 // Modify the .exe.config file for the BSC so that it works correctly
                 listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
-                String nonJctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
-                nonJctsBSCtext = nonJctsBSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
-                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, nonJctsBSCtext);
-               
+                String jctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                jctsBSCtext = jctsBSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, jctsBSCtext);
+
 
                 // Modify the .exe.config file for the DCS so that it works correctly
                 listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
-                String nonJctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
-                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
-                nonJctsAECtext = nonJctsAECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
-                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
+                String jctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                jctsAECtext = jctsAECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                jctsAECtext = jctsAECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
+                jctsAECtext = jctsAECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, jctsAECtext);
 
                 listBox1.Items.Add(String.Empty);
             }
@@ -591,19 +591,19 @@ namespace DCS_Configuration_Tool
 
                 // Modify the .exe.config file for the BSC so that it works correctly
                 listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
-                String jctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
-                jctsBSCtext = jctsBSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
-                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, jctsBSCtext);
+                String nonJctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, nonJctsBSCtext);
 
                 // Modify the .exe.config file for the DCS so that it works correctly
                 listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
-                String jctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
-                jctsAECtext = jctsAECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
-                jctsAECtext = jctsAECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
-                jctsAECtext = jctsAECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, jctsAECtext);
+                String nonJctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
+                nonJctsAECtext = nonJctsAECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
+                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
 
                 listBox1.Items.Add(String.Empty);
             }
