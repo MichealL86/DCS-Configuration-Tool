@@ -34,6 +34,11 @@ namespace DCS_Configuration_Tool
         string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "SCS_D", "ScsA", "Switch", "UPS",
                                 "AEC", "ROCS", "SNMP"};
 
+        string[] startApps = { "C:\\Program Files (x86)\\General Atomics\\DCS_Sim\\DCSSimulator.exe", "C:\\Program Files (x86)\\General Atomics\\BSCSimulator\\BSCSimulator.exe",
+            "C:\\Program Files (x86)\\General Atomics\\ISM_Sim\\WindowsFormsApplication1.exe", "C:\\Program Files (x86)\\General Atomics\\PickleSwitchSim\\ModbusTestClient.exe",
+            "C:\\Program Files (x86)\\General Atomics\\ScsAdmacsSim\\ScsAdmacsSim.exe", "C:\\Program Files (x86)\\General Atomics\\Switch_Sim\\SwitchSimulator.exe",
+            "C:\\Program Files (x86)\\General Atomics\\UPS_Sim\\UPSSimulator.exe", "C:\\Program Files (x86)\\General Atomics\\SCS_Display\\ScsDisplay.exe"};
+
         // String array of IP addresses for HMAP LAN
         string[] hmapIP = {"172.24.4.1", "172.24.4.2", "172.24.4.3", "172.24.4.4", "172.24.4.5", "172.24.4.6",
                             "172.24.4.7", "172.24.4.8", "172.24.128.10", "172.24.128.11", "172.24.128.16",
@@ -406,14 +411,20 @@ namespace DCS_Configuration_Tool
         // Used to start all simulators
         private void StartSimulators(object sender, EventArgs e)
         {
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\DCS_Sim\\DCSSimulator.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\BSCSimulator\\BSCSimulator.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\ISM_Sim\\WindowsFormsApplication1.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\PickleSwitchSim\\ModbusTestClient.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\SCS_Display\\ScsDisplay.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\ScsAdmacsSim\\ScsAdmacsSim.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\Switch_Sim\\SwitchSimulator.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\UPS_Sim\\UPSSimulator.exe");
+            int appcount = 0;
+            try
+            {
+                for (int i = 0; i < startApps.Length; i++)
+                {
+                    Process.Start(startApps[i]);
+                    appcount = ++appcount;
+                }
+            }
+            catch
+            {
+                listBox1.Items.Add(startApps[appcount] + " did not start");
+            }
+
         }
 
         // Handles the LAN check boxes and either enables or disables through a called method
