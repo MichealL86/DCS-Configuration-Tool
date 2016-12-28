@@ -976,41 +976,49 @@ namespace DCS_Configuration_Tool
             {
                 if (aecChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[0]);
                     Process.Start(startApps[0]);
                 }
 
                 if (bscChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[1]);
                     Process.Start(startApps[1]);
                 }
 
                 if (ismChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[2]);
                     Process.Start(startApps[2]);
                 }
 
                 if (pickleChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[3]);
                     Process.Start(startApps[3]);
                 }
 
                 if (scsAChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[4]);
                     Process.Start(startApps[4]);
                 }
 
                 if (switchChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[5]);
                     Process.Start(startApps[5]);
                 }
 
                 if (upsChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[6]);
                     Process.Start(startApps[6]);
                 }
 
                 if (scsDChkBx.Checked)
                 {
+                    SetText("Starting " + startApps[7]);
                     Process.Start(startApps[7]);
                 }
 
