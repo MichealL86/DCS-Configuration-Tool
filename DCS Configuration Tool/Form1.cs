@@ -32,7 +32,7 @@ namespace DCS_Configuration_Tool
         int ipCount;
         DirectoryInfo rootDirectory;
 
-        string logName = string.Format("DCSLog_{0:MMddyyyy}.txt", DateTime.Now);
+        string logName = string.Format("\\DCSLog_{0:MMddyyyy}.txt", DateTime.Now);
         string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
         string fullBSCExeConfig = "		<add key=\"countAECs\" value=\"0\"/>";
         string jctsBSCExeConfig = "     <add key=\"CountAECs\" value=\"4\"/> ";
@@ -520,7 +520,15 @@ namespace DCS_Configuration_Tool
                             }
                             else if (Directory.Exists(aecHome + @"\AEC" + count))
                             {
-                                Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                                if (!Directory.Exists(dirArr[i] + @"\AEC" + count))
+                                {
+                                    Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                                }
+                                else if (Directory.Exists(dirArr[i] + @"\AEC" + count))
+                                {
+                                    Directory.Delete(dirArr[i] + @"\AEC" + count);
+                                    Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                                }
                             }
                         }
 
@@ -646,14 +654,14 @@ namespace DCS_Configuration_Tool
                 {
                     //listBox1.Items.Add("Copying new ASF files from thumb drive");
                     SetText("Copying new ASF files from thumb drive");
-                    if (!Directory.Exists(asfLocation + i + @"\AirCraftSettingsFile.csv"))
+                    if (!System.IO.File.Exists(asfLocation + i + @"\AircraftSettingsFile.csv"))
                     {
                         SetText(" Could not add asf to " + asfLocation + i);
                         SetText("The directory may not exist");
                     }
-                    else if (Directory.Exists(asfLocation + i + @"\AirCraftSettingsFile.csv"))
+                    else if (System.IO.File.Exists(asfLocation + i + @"\AircraftSettingsFile.csv"))
                     {
-                        System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
+                        System.IO.File.Copy(asfFile, asfLocation + i + @"\AircraftSettingsFile.csv", true);
                     }
                 }
             }
@@ -821,6 +829,13 @@ namespace DCS_Configuration_Tool
 
                 new Microsoft.VisualBasic.Devices.Computer().
                     FileSystem.CopyDirectory(monitoredDirectory, path);
+
+               
+            }
+
+            foreach (string thumbDir in Directory.GetDirectories(Path.Combine(rootDirectory.Name, "4WS")))
+            {
+                SetText("Updating Application from " + thumbDir);
             }
 
             // Move old AEC's and ID folder to backup DCS folder
@@ -1195,6 +1210,8 @@ namespace DCS_Configuration_Tool
         private void logFile_Click(object sender, EventArgs e)
         {
             logFile();
+
+            SetText("Log file has been saved at " + path);
         }
 
         private void deleteLog_Click(object sender, EventArgs e)
