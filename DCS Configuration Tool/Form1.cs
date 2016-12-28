@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
 using DCS_Configuration_Tool;
+using System.Threading.Tasks;
 
 namespace DCS_Configuration_Tool
 {
@@ -20,20 +21,52 @@ namespace DCS_Configuration_Tool
 
     public partial class Form1 : Form
     {
-        //
-        DirectoryInfo rootDirectory;
-        private updateApps update;
-        public static Progress_Form prgfrm = new Progress_Form();
-        
-        
-        // String array to hold all application names for DCS
-        string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
-                                "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator",
-                                "UPSSimulator"};
+        delegate void SetTextCallback(string text);
 
-        // String array to hold all process names for DCS
-        string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "SCS_D", "ScsA", "Switch", "UPS",
+        string aecPath = @"C:\";
+        static string path = @"C:\Program Files (x86)\General Atomics";
+
+        // A PingReplay variable named reply
+        PingReply reply;
+        // An integer variable named ipCount
+        int ipCount;
+        DirectoryInfo rootDirectory;
+
+        string logName = string.Format("DCSLog_{0:MMddyyyy}.txt", DateTime.Now);
+        string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
+        string fullBSCExeConfig = "		<add key=\"countAECs\" value=\"0\"/>";
+        string jctsBSCExeConfig = "     <add key=\"CountAECs\" value=\"4\"/> ";
+        string nonJctsBSCExeConfig = " 		<add key=\"countAECs\" value=\"1\"/>";
+        string jctsBSCAddKey = "		<add key=\"0\" value=\"BSC0\"/>";
+        string nonJctsBSCAddKey = "		<add key=\"0\" value=\"BSC1\"/>";
+
+        string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Sim\DCSSimulator.exe.config";
+        string fullAECExeConfig = "    <add key=\"countAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECExeConfig = "    <add key=\"countAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string nonJctsAECExeconfig = "    <add key=\"countAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
+        string jctsAECAddKey = "    <add key=\"0\" value=\"AEC0\"/>";
+        string nonJctsAECAddKey = "    <add key=\"0\" value=\"AEC1\"/>";
+
+        string[] appDirs = Directory.GetDirectories(path);
+        string[] desktopLinks;
+        string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
+                                "ModbusTestClient", "ScsAdmacsSim",  "SwitchSimulator", "UPSSimulator", "ScsDisplay"};
+
+        string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "ScsD", "ScsA", "Switch", "UPS",
                                 "AEC", "ROCS", "SNMP"};
+
+
+
+        // Pattern for : name + eight numbers at the end
+        string rmPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+(\\d{8})$");
+        // Pattern for : name 
+        string mvPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+\\\\?$");
+        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+        string[] startApps = {"C:\\Program Files (x86)\\General Atomics\\DCS_Sim\\DCSSimulator.exe", "C:\\Program Files (x86)\\General Atomics\\BSCSimulator\\BSCSimulator.exe",
+            "C:\\Program Files (x86)\\General Atomics\\ISM_Sim\\WindowsFormsApplication1.exe", "C:\\Program Files (x86)\\General Atomics\\PickleSwitchSim\\ModbusTestClient.exe",
+            "C:\\Program Files (x86)\\General Atomics\\ScsAdmacsSim\\ScsAdmacsSim.exe","C:\\Program Files (x86)\\General Atomics\\Switch_Sim\\SwitchSimulator.exe",
+            "C:\\Program Files (x86)\\General Atomics\\UPS_Sim\\UPSSimulator.exe", "C:\\Program Files (x86)\\General Atomics\\SCS_Display\\ScsDisplay.exe"};
 
         // String array of IP addresses for HMAP LAN
         string[] hmapIP = {"172.24.4.1", "172.24.4.2", "172.24.4.3", "172.24.4.4", "172.24.4.5", "172.24.4.6",
@@ -51,7 +84,7 @@ namespace DCS_Configuration_Tool
                             "172.21.5.3", "172.21.5.4" };
 
         // String array of IP addresses for ADMACS LAN
-        string[] admacsIp = { "172.16.4.10", "172.16.4.11", "172.16.4.222" };
+        string[] admacsIp = { "172.16.4.10", "172.16.4.11" };
 
         // String array of IP addresses for HMAP LAN
         string[] jctsHmapIP = { "172.24.4.1", "172.24.4.2", "172.24.4.7", "172.24.128.10", "172.24.128.11",
@@ -75,32 +108,26 @@ namespace DCS_Configuration_Tool
         // String array of IP addresses for AGS LAN
         string[] njctsAgs2IP = { "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.2", "172.21.5.3", "172.21.5.4" };
 
-        // A PingReplay variable named reply
-        PingReply reply;
-        // An integer variable named ipCount
-        int ipCount;
-
-        static string path = @"C:\Program Files (x86)\General Atomics\";
-        string logName = string.Format("DCSLog_{0:MMddyyyy}.txt", DateTime.Now) ;
-        string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
-        string fullBSCExeConfig = "<add key=\"CountAECs\" value=\"0\"/> ";
-        string jctsBSCExeConfig = "<add key=\"CountAECs\" value=\"4\"/> ";
-        string nonJctsBSCExeConfig = "<add key=\"CountAECs\" value=\"1\"/> ";
-        string jctsBSCAddKey = "<add key=\"0\" value=\"BSC0\"/>";
-        string nonJctsBSCAddKey = "<add key=\"0\" value=\"BSC1\"/>";
-
-        string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Sim\DCSSimulator.exe.config";
-        string fullAECExeConfig = "<add key=\"CountAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string jctsAECExeConfig = "<add key=\"CountAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string nonJctsAECExeconfig = "<add key=\"CountAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
-        string jctsAECAddKey = "<add key=\"0\" value=\"AEC0\"/>";
-        string nonJctsAECAddKey = "<add key=\"0\" value=\"AEC1\"/>";
-
+        
+        private void SetText(string text)
+        {
+            if (this.listBox1.InvokeRequired)
+            {
+                SetTextCallback callBack = new SetTextCallback(SetText);
+                this.Invoke(callBack, new object[] { text });
+            }
+            else
+            {
+                string add = text;
+                this.listBox1.Items.Add(add);
+            }
+        }
   
         // Using a process to enable specified LANs
         public void EnableLAN(object interfaceName)
         {
-            listBox1.Items.Add("Enabling LAN " + interfaceName);
+            listBox1.Items.Add("Enabling LAN " + interfaceName); 
+
             ProcessStartInfo psi = new ProcessStartInfo("netsh", "interface set interface \"" + interfaceName +
                 "\" enable");
             Process p = new Process();
@@ -173,7 +200,7 @@ namespace DCS_Configuration_Tool
                 else if (ipCount != arrLAN.Length)
                 {
                     listBox1.Items.Add("The following address connected unsuccessfullly");
-                    for (int i = 0; i < arrLAN.Length; i++)
+                    for (int i = 0; i < noConnection.Length; i++)
                     {
                         string message = noConnection[i].ToString();
                         listBox1.Items.Add("Could not establish connection to " + message);
@@ -183,7 +210,9 @@ namespace DCS_Configuration_Tool
             }
             catch (NullReferenceException e)
             {
-                listBox1.Items.Add(e.Message);
+                listBox1.Items.Add("If address '172.16.4.222' make sure ScsAdmacsSim on and running with SCS");
+                listBox1.Items.Add("or ignore this message");
+                listBox1.Items.Add("For all other address check to make sure address exist within specified LAN");
             }
 
         }
@@ -191,85 +220,606 @@ namespace DCS_Configuration_Tool
         // Using a process delete the specified IP addresses
         public void deleteIP(object interfaceName, string[] arrLAN)
         {
+            string delIP = string.Empty;
+
+
             foreach (string ip in arrLAN)
             {
-                listBox1.Items.Add("Deleting " + arrLAN.ToString() + " IP address " + ip);
-                ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", interfaceName, ip));
-                Process p = new Process();
-                p.StartInfo = psi;
-                p.StartInfo.CreateNoWindow = true;
-                p.StartInfo.UseShellExecute = false;
-                p.Start();
+                try
+                {
+                    delIP = ip;
+                    SetText("Deleting IP address " + ip);
+                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", interfaceName, ip));
+                    Process p = new Process();
+                    p.StartInfo = psi;
+                    p.StartInfo.CreateNoWindow = true;
+                    p.StartInfo.UseShellExecute = false;
+                    p.Start();
+
+                    Thread.Sleep(500);
+                }
+
+                catch
+                {
+                    SetText("Problem with deleting " + delIP);
+                }
             }
 
-            Thread.Sleep(500);
+            
         }
 
         // Using a process add the specified IP addresses
         public void addIP(object interfaceName, string[] arrLAN)
         {
-            foreach (string ip in arrLAN)
+            string addIP = string.Empty;
+
+            try
             {
-                listBox1.Items.Add("Adding " + arrLAN.ToString() + " IP address " + ip);
+                foreach (string ip in arrLAN)
+                {
+                    SetText("Adding IP address " + ip);
+                    addIP = ip;
 
-                if (ip == "172.20.1.1")
-                {
-                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0 gateway=172.20.0.1", interfaceName, ip));
-                    Process p = new Process();
-                    p.StartInfo = psi;
-                    p.StartInfo.CreateNoWindow = true;
-                    p.StartInfo.UseShellExecute = false;
-                    p.Start();
-                }
-                else if (ip == "172.21.1.1")
-                {
-                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0", interfaceName, ip));
-                    Process p = new Process();
-                    p.StartInfo = psi;
-                    p.StartInfo.CreateNoWindow = true;
-                    p.StartInfo.UseShellExecute = false;
-                    p.Start();
+                    if (ip == "172.20.1.1")
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0 gateway=172.20.0.1", interfaceName, ip));
+                        Process p = new Process();
+                        p.StartInfo = psi;
+                        p.StartInfo.CreateNoWindow = true;
+                        p.StartInfo.UseShellExecute = false;
+                        p.Start();
 
-                }
-                else if (ip == "172.16.4.10")
-                {
-                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0 gateway=172.16.4.222", interfaceName, ip));
-                    Process p = new Process();
-                    p.StartInfo = psi;
-                    p.StartInfo.CreateNoWindow = true;
-                    p.StartInfo.UseShellExecute = false;
-                    p.Start();
-                }
-                else
-                {
-                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", interfaceName, ip));
-                    Process p = new Process();
-                    p.StartInfo = psi;
-                    p.StartInfo.CreateNoWindow = true;
-                    p.StartInfo.UseShellExecute = false;
-                    p.Start();
+                        Thread.Sleep(500);
+                    }
+                    else if (ip == "172.21.1.1")
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0", interfaceName, ip));
+                        Process p = new Process();
+                        p.StartInfo = psi;
+                        p.StartInfo.CreateNoWindow = true;
+                        p.StartInfo.UseShellExecute = false;
+                        p.Start();
+
+                        Thread.Sleep(500);
+                    }
+                    else if (ip == "172.16.4.10")
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 set address name=\"{0}\" addr={1} mask=255.255.0.0 gateway=172.16.4.222", interfaceName, ip));
+                        Process p = new Process();
+                        p.StartInfo = psi;
+                        p.StartInfo.CreateNoWindow = true;
+                        p.StartInfo.UseShellExecute = false;
+                        p.Start();
+
+                        Thread.Sleep(500);
+                    }
+                    else
+                    {
+                        ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", interfaceName, ip));
+                        Process p = new Process();
+                        p.StartInfo = psi;
+                        p.StartInfo.CreateNoWindow = true;
+                        p.StartInfo.UseShellExecute = false;
+                        p.Start();
+
+                        Thread.Sleep(500);
+                    }
                 }
             }
+            catch
+            {
+                SetText("Problem adding " + addIP);
+            }
+            
+        }
 
-            Thread.Sleep(500);
+        public void ConfigureIpNetwork()
+        {
+            if (radioButton1.Checked) // Full Setup
+            {
+                SetText("Healthmap IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[0], hmapIP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[0], hmapIP);
+
+                SetText(String.Empty);
+
+                SetText("AGS 1 IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[1], ags1IP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[1], ags1IP);
+
+                SetText(String.Empty);
+
+                SetText("AGS 2 IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[2], ags2IP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[2], ags2IP);
+
+                SetText(String.Empty);
+
+                SetText("ADMACS IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[3], admacsIp);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[3], admacsIp);
+
+                SetText(String.Empty);
+
+                // Modify the .exe.config file for the BSC so that it works correctly
+                SetText("Configuring the BSCSimulator.exe.config file");
+                String fullBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                fullBSCtext = fullBSCtext.Replace(jctsBSCExeConfig, fullBSCExeConfig);
+                fullBSCtext = fullBSCtext.Replace(nonJctsBSCExeConfig, fullBSCExeConfig);
+                fullBSCtext = fullBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, fullBSCtext);
+
+                // Modify the .exe.config file for the DCS so that it works correctly
+                SetText("Configuring the AECSimulator.exe.config file");
+                String fullAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                fullAECtext = fullAECtext.Replace(jctsAECExeConfig, fullAECExeConfig);
+                fullAECtext = fullAECtext.Replace(nonJctsAECExeconfig, fullAECExeConfig);
+                fullAECtext = fullAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, fullAECtext);
+
+                SetText(String.Empty);
+
+            }
+
+            else if (radioButton2.Checked) // JCTS
+            {
+                SetText("JCTS Healthmap IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[0], hmapIP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[0], jctsHmapIP);
+
+                SetText(String.Empty);
+
+                SetText("JCTS AGS 1 IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[1], ags1IP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[1], jctsAgs1IP);
+
+                SetText(String.Empty);
+
+                SetText("JCTS AGS 2 IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[2], ags2IP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[2], jctsAgs2IP);
+
+                SetText(String.Empty);
+
+                SetText("ADMACS IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[3], admacsIp);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[3], admacsIp);
+
+                SetText(String.Empty);
+
+                // Modify the .exe.config file for the BSC so that it works correctly
+                SetText("Configuring the BSCSimulator.exe.config file");
+                String jctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                jctsBSCtext = jctsBSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, jctsBSCtext);
+
+
+                // Modify the .exe.config file for the DCS so that it works correctly
+                SetText("Configuring the AECSimulator.exe.config file");
+                String jctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                jctsAECtext = jctsAECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                jctsAECtext = jctsAECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
+                jctsAECtext = jctsAECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, jctsAECtext);
+
+                SetText(String.Empty);
+            }
+            else if (radioButton3.Checked) // NON-JCTS
+            {
+                SetText("NON-JCTS Healthmap IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[0], hmapIP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[0], njctsHmapIP);
+
+                SetText(String.Empty);
+
+                SetText("NON-JCTS AGS 1 IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[1], ags1IP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[1], njctsAgs1IP);
+
+                SetText(String.Empty);
+
+                SetText("NON-JCTS AGS 2 IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[2], ags2IP);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[2], njctsAgs2IP);
+
+                SetText(String.Empty);
+
+                SetText("ADMACS IP Configuration:");
+                SetText("-------------------------------------------------------");
+                deleteIP(checkedListBox1.Items[3], admacsIp);
+                SetText(String.Empty);
+                addIP(checkedListBox1.Items[3], admacsIp);
+
+                SetText(String.Empty);
+
+                // Modify the .exe.config file for the BSC so that it works correctly
+                SetText("Configuring the BSCSimulator.exe.config file");
+                String nonJctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
+                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
+                System.IO.File.WriteAllText(bscConfigPath, nonJctsBSCtext);
+
+                // Modify the .exe.config file for the DCS so that it works correctly
+                SetText("Configuring the AECSimulator.exe.config file");
+                String nonJctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
+                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
+                nonJctsAECtext = nonJctsAECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
+                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
+                System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
+
+                SetText(String.Empty);
+            }
+        }
+
+        // AddDirectory method is used to give the named directory certain permissions
+        public static void AddDirectorySecurity(string FileName, string Account, FileSystemRights Rights,
+                                                AccessControlType ControlType)
+        {
+            // Create a new DirectoryInfo object
+            DirectoryInfo dInfo = new DirectoryInfo(FileName);
+
+            // Get a DirectorySecurity object that represents the 
+            // current security settings
+            DirectorySecurity dSecurity = dInfo.GetAccessControl();
+
+            // Add the FileSystemAccessRule to the security settings
+            dSecurity.AddAccessRule(new FileSystemAccessRule(Account, Rights, ControlType));
+
+            // Set the new access settings
+            dInfo.SetAccessControl(dSecurity);
+        }
+
+        public void moveOldAec(string[] dirArr, string aecHome, string mainPath)
+        {
+
+            string oldDCS = string.Format(@"\DCS_Sim_{0:MMddyyyy}", DateTime.Now);
+            string userName = @"hmuser";
+
+            for (int i = 0; i < dirArr.Length; i++)
+            {
+                if (dirArr[i] == mainPath + oldDCS)
+                {
+                    try
+                    {
+                        for (int j = 1; j < 5; j++)
+                        {
+                            int count = j;
+
+                            SetText("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
+
+                            Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                        }
+
+                        //listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\ID");
+                        SetText("Moving old ID folder to  " + dirArr[i] + @"\ID");
+
+
+                        Directory.Move(aecHome + @"\ID", dirArr[i] + @"\ID");
+
+
+                        // Need to add the delete method on the labtop for DataFolder, test here first
+                        if (Directory.Exists(aecHome + string.Format(@"\Users\{0}\DataFolder", userName)))
+                        {
+                           // listBox1.Items.Add("Moving old DataFolder to  " + dirArr[i] + @"\DataFolder");
+                            SetText("Moving old DataFolder to  " + dirArr[i] + @"\DataFolder");
+
+
+                            Directory.Delete(string.Format(@"C:\Users\{0}\DataFolder", userName), true);
+                        }
+                        else
+                        {
+                            MessageBox.Show("There is not a current DataFolder located at:" + aecHome +
+                                @"\Users\hmuser\");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        //listBox1.Items.Add("The AEC Folders already exists in " + dirArr[i] +
+                           // Environment.NewLine + "Error Message: " + e.Message);
+
+                        SetText("The AEC Folders already exists in " + dirArr[i] +
+                            Environment.NewLine + "Error Message: " + e.Message);
+
+                    }
+                }
+            }
+        }
+
+        // Move new AEC 1-4, ID, Datafolder folders and create a transfolder directory if not 
+        // created
+        public void mvNewAec(string[] dirArr, string aecHome, string mainPath)
+        {
+            string userName = @"hmuser";
+            string newDCS = string.Format(@"{0}\DCS_Sim", mainPath);
+            string dataFldDir = string.Format(@"{0}Users\{1}\DataFolder", aecHome, userName);
+            string TransFldDir = string.Format(@"{0}Users\{1}\TransFolder", aecHome, userName);
+
+            for (int i = 0; i < dirArr.Length; i++)
+            {
+                Regex rg = new Regex(@"_[0-9]{8}");
+
+                dirArr[i] = rg.Replace(dirArr[i], string.Empty);
+
+                if (dirArr[i] == newDCS)
+                {
+                    try
+                    {
+                        for (int j = 1; j < 5; j++)
+                        {
+                            int count = j;
+                            //listBox1.Items.Add("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
+                            SetText("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
+
+                            Directory.Move(dirArr[i] + @"\AEC" + count, aecHome + @"\AEC" + count);
+                            listBox1.Items.Add("Adding permissions to   " + aecHome + @"\AEC" + count);
+
+                            AddDirectorySecurity(aecHome + @"\AEC" + count, Environment.UserName, FileSystemRights.FullControl,
+                                                        AccessControlType.Allow);
+                        }
+
+                        //listBox1.Items.Add("Moving new ID Folder to  " + aecHome + @"\ID");
+                        SetText("Moving new ID Folder to  " + aecHome + @"\ID");
+
+                        Directory.Move(dirArr[i] + @"\ID", aecHome + @"\ID");
+                        //listBox1.Items.Add("Adding permissions to  " + aecHome + @"\ID");
+                        SetText("Adding permissions to  " + aecHome + @"\ID");
+
+                        AddDirectorySecurity(aecHome + @"\ID", Environment.UserName, FileSystemRights.FullControl,
+                                                        AccessControlType.Allow);
+
+                        //listBox1.Items.Add("Moving new DataFolder Folder to  " + dataFldDir);
+                        SetText("Moving new DataFolder Folder to  " + dataFldDir);
+
+                        Directory.Move(dirArr[i] + @"\DataFolder", dataFldDir);
+                        //listBox1.Items.Add("Adding permissions to  " + dataFldDir);
+                        SetText("Adding permissions to  " + dataFldDir);
+
+                        AddDirectorySecurity(dataFldDir, Environment.UserName, FileSystemRights.FullControl,
+                                                        AccessControlType.Allow);
+
+                        if (!Directory.Exists(TransFldDir))
+                        {
+                            //listBox1.Items.Add("Creating new TransFolder at  " + TransFldDir);
+                            SetText("Creating new TransFolder at  " + TransFldDir);
+
+                            Directory.CreateDirectory(TransFldDir);
+                        }
+                        else if (Directory.Exists(TransFldDir))
+                        {
+                            //listBox1.Items.Add("The TransFolder Directory Exists");
+                            SetText("The TransFolder Directory Exists");
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        //listBox1.Items.Add(e.Message);
+                        SetText(e.Message);
+                    }
+                }
+            }
+        }
+
+        public void cpASF(string srcName, string trgName)
+        {
+            string asfFile = Path.Combine(srcName, "AircraftSettingsFile.csv");
+            string asfLocation = Path.Combine(trgName, "AEC");
+
+            if (System.IO.File.Exists(asfFile))
+            {
+                for (int i = 1; i < 5; i++)
+                {
+                    //listBox1.Items.Add("Copying new ASF files from thumb drive");
+                    SetText("Copying new ASF files from thumb drive");
+
+                    System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
+                }
+            }
+            else
+            {
+                //listBox1.Items.Add("AircraftSettingsFile.csv file missing on thumbdrive");
+                SetText("AircraftSettingsFile.csv file missing on thumbdrive");
+            }
+        }
+
+        public void CreateShortcut(string[] appName, string mainPath, string[] gaDirs, string pattern)
+        {
+
+            string shortcutAddress;
+            object shDesktop = (object)"Desktop";
+            WshShell shell = new WshShell();
+            int count = 0;
+
+            foreach (string dir in gaDirs)
+            {
+                // Regular expression with the rmPattern to find numbers at the end of the title
+                Match checkDir = Regex.Match(dir, pattern);
+
+
+                while (checkDir.Success)
+                {
+
+                    if (appName[count] == "WindowsFormsApplication1")
+                    {
+                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ISM_Sim" + ".lnk";
+                        //listBox1.Items.Add("Created shortcut " + shortcutAddress);
+                        SetText("Created shortcut " + shortcutAddress);
+                    }
+                    else if (appName[count] == "ModbusTestClient")
+                    {
+                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\PickleSwitchSim" + ".lnk";
+                        //listBox1.Items.Add("Created shortcut " + shortcutAddress);
+                        SetText("Created shortcut " + shortcutAddress);
+                    }
+                    else
+                    {
+                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + appName[count] + ".lnk";
+                        //listBox1.Items.Add("Created shortcut " + shortcutAddress);
+                        SetText("Created shortcut " + shortcutAddress);
+                    }
+
+                    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+                    shortcut.WorkingDirectory = checkDir + @"\";
+                    shortcut.TargetPath = checkDir + @"\" + appName[count] + ".exe";
+                    shortcut.Save();
+                    Thread.Sleep(500);
+                    checkDir = checkDir.NextMatch();
+                }
+                count++;
+            }
+        }
+
+        public void DeleteShortcut(string[] appName, string srcDir, string[] delLink)
+        {
+            for (int i = 0; i < appName.Length; i++)
+            {
+                delLink = Directory.GetFiles(srcDir, string.Format("{0}*.lnk", appName[i]));
+
+                foreach (string link in delLink)
+                {
+                    //listBox1.Items.Add("Deleting " + link);
+                    SetText("Deleting " + link);
+
+                    System.IO.File.Delete(link);
+                }
+            }
         }
 
         // Use paint graphics to create a progress bar that shows the status inside of it
         public void paintProgress(string text)
         {
-            using (Graphics gr = prgfrm.progressBar1.CreateGraphics())
+            // Change this back to prgfrm.progressBar1.CreateGraphics is the one on Form1 does not work any different
+            using (Graphics gr = progressBar1.CreateGraphics())
             {
-                prgfrm.progressBar1.Refresh();
+                progressBar1.Refresh();
+                //prgfrm.progressBar1.Refresh();
                 gr.DrawString(text,
                     SystemFonts.DefaultFont,
                     Brushes.Black,
-                    new PointF(prgfrm.progressBar1.Width / 2 - (gr.MeasureString(text,
+                    new PointF(progressBar1.Width / 2 - (gr.MeasureString(text,
                                 SystemFonts.DefaultFont).Width / 2.0F),
-                                prgfrm.progressBar1.Height / 2 - (gr.MeasureString(text,
+                                progressBar1.Height / 2 - (gr.MeasureString(text,
                                 SystemFonts.DefaultFont).Height / 2.0F)));
+
+                    //new PointF(prgfrm.progressBar1.Width / 2 - (gr.MeasureString(text,
+                    //            SystemFonts.DefaultFont).Width / 2.0F),
+                    //            prgfrm.progressBar1.Height / 2 - (gr.MeasureString(text,
+                    //            SystemFonts.DefaultFont).Height / 2.0F)));
 
             }
             Application.DoEvents();
+        }
+
+        public void updateApps()
+        {
+            
+            // This is used to find all Folders that end in a date and delete them
+            foreach (string delDir in appDirs)
+            {
+                // Regular expression with the rmPattern to find numbers at the end of the title
+                Match rmDir = Regex.Match(delDir, rmPattern);
+
+                // While the regular expression rmDir is successful, 
+                //delete the current directory and files listed     
+                while (rmDir.Success)
+                {
+                    //listBox1.Items.Add("Deleting " + delDir.ToString());
+                    SetText("Deleting " + delDir.ToString());
+
+                    try
+                    {
+                        //Delete the named folder and when set true delete everything within the folder
+                        Directory.Delete(rmDir.Value, true);
+                        // Look for the next matching folder
+                        rmDir = rmDir.NextMatch();
+                    }
+                    catch
+                    {
+                        SetText("The location " + rmDir.Value + " does not exist to delete");
+                        continue;
+                    }
+                }
+            }
+
+            // Used to refresh the Directory listing to current status
+            string[] repDirs = Directory.GetDirectories(path);
+
+
+            // While the RegexEx mvDir is successful,
+            // rename the current folders used for the simulators
+            foreach (string repDir in repDirs)
+            {
+                // Regular expression with the mvPattern for currently used folders
+                Match mvDir = Regex.Match(repDir, mvPattern);
+
+
+                while (mvDir.Success)
+                {
+                    //listBox1.Items.Add("Creating Backup " + repDir.ToString());
+                    SetText("Creating Backup " + repDir.ToString());
+
+                    //store a new string name of the folder with todays date appended to it
+                    string appName = string.Format("{0}_{1:MMddyyyy}", repDir, DateTime.Now);
+                    //Replace the old folder name with the new one
+                    Directory.Move(repDir, appName);
+                    // Find the next pattern matched folder
+                    mvDir = mvDir.NextMatch();
+                }
+            }
+
+            // Used to refresh the Directory listing to current status
+            string[] cpDirs = Directory.GetDirectories(path);
+
+            // Used to search any given removable drive (USB) that is mounted
+            foreach (DriveInfo removableDrive in DriveInfo.GetDrives().Where(
+                         drive => drive.DriveType == DriveType.Removable && drive.IsReady))
+            {
+                rootDirectory = removableDrive.RootDirectory;
+                string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
+
+                new Microsoft.VisualBasic.Devices.Computer().
+                    FileSystem.CopyDirectory(monitoredDirectory, path);
+            }
+
+            // Move old AEC's and ID folder to backup DCS folder
+            moveOldAec(cpDirs, aecPath, path);
+
+            // Move new AEC's, ID, and overwrite the old Datafolder to correct locations
+            mvNewAec(cpDirs, aecPath, path);
+
+            // Used to copy a newer ASF file to the C drive if the existing one is older
+            cpASF(rootDirectory.FullName, aecPath);
+
+            // Used to delete the current desktop shortcuts
+            DeleteShortcut(processName, desktopPath, desktopLinks);
+
+            // Used to create new shortcuts based on new executables
+            CreateShortcut(appProcess, path, cpDirs, mvPattern);
         }
 
         public void logFile()
@@ -312,17 +862,14 @@ namespace DCS_Configuration_Tool
         // While updateApps is do background work on the progress bar
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
-
-            
-
             for (int i = 1; i <= 100; i++)
-            {            
+            {
+                // Wait 100 milliseconds
+                Thread.Sleep(60);
+
                 // Report progress
                 backgroundWorker1.ReportProgress(i);
 
-                // Wait 100 milliseconds
-                Thread.Sleep(60);
-                
             }
         }
 
@@ -333,20 +880,31 @@ namespace DCS_Configuration_Tool
             // Change the value of the ProgressBar to the BackgroundWorker progress.
             // prgfrm.progressBar1.Value = e.ProgressPercentage;
 
-            // This approach will side step the lag by removing the progressive animation
-            prgfrm.progressBar1.SetProgressNoAnimation(e.ProgressPercentage);
             
-            int percent = (int)((prgfrm.progressBar1.Value - prgfrm.progressBar1.Minimum) /
-                (double)(prgfrm.progressBar1.Maximum - prgfrm.progressBar1.Minimum) * 100);       
+
+            // This approach will side step the lag by removing the progressive animation
+            progressBar1.SetProgressNoAnimation(e.ProgressPercentage);
+
+            // This approach will side step the lag by removing the progressive animation
+            //prgfrm.progressBar1.SetProgressNoAnimation(e.ProgressPercentage);
+
+            int percent = (int)((progressBar1.Value - progressBar1.Minimum) /
+                (double)(progressBar1.Maximum - progressBar1.Minimum) * 100); 
+
+            //int percent = (int)((prgfrm.progressBar1.Value - prgfrm.progressBar1.Minimum) /
+            //   (double)(prgfrm.progressBar1.Maximum - prgfrm.progressBar1.Minimum) * 100);       
 
             paintProgress(percent.ToString() + "%");
+            
+            
+
+            // Wait 100 milliseconds
+            Thread.Sleep(30);
         }
 
         // Show the status of work when complete
         public void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            //Progress_Form prgfrm = new Progress_Form();
-
             if (e.Error != null)
             {
                 paintProgress("Error: " + e.Error.Message);
@@ -357,8 +915,10 @@ namespace DCS_Configuration_Tool
                 // Wait 1000 milliseconds
                 Thread.Sleep(1000);
                 this.UpdateSims.Enabled = true;
-                prgfrm.Close();
-                backgroundWorker1.Dispose();
+                progressBar1.Value = 0;
+                progressBar1.Visible = false;
+                //prgfrm.Close();
+                //backgroundWorker1.Dispose();
             }
 
         }
@@ -366,13 +926,29 @@ namespace DCS_Configuration_Tool
         // Calls updateApps to start background work (This is the update sim button)
         private void UpdateSimulators(object sender, EventArgs e)
         {
+            // Place GetProcesses on a variable
+            var runningProcesses = Process.GetProcesses();
 
+            // Use a for loop to cycle through the processKill array to stop the named applications
+            for (int i = 0; i < runningProcesses.Length; i++)
+            {
+                if (appProcess.Contains(runningProcesses[i].ProcessName))
+                {
+                    listBox1.Items.Add("Stopping " + runningProcesses[i]);
+                    runningProcesses[i].Kill();
+                    runningProcesses[i].WaitForExit();
+                }
+            }
 
+            this.progressBar1.Visible = true;
             this.UpdateSims.Enabled = false;
             backgroundWorker1.WorkerReportsProgress = true;
-            prgfrm.Show();
-            backgroundWorker1.RunWorkerAsync(update);
-            update = new updateApps(this);
+
+            backgroundWorker1.RunWorkerAsync();
+
+            Thread updateThread = new Thread(updateApps);
+            updateThread.Start();
+
         }
 
         // Use to stop all known Simulators running
@@ -396,14 +972,62 @@ namespace DCS_Configuration_Tool
         // Used to start all simulators
         private void StartSimulators(object sender, EventArgs e)
         {
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\DCS_Sim\\DCSSimulator.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\BSCSimulator\\BSCSimulator.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\ISM_Sim\\WindowsFormsApplication1.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\PickleSwitchSim\\ModbusTestClient.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\SCS_Display\\ScsDisplay.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\ScsAdmacsSim\\ScsAdmacsSim.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\Switch_Sim\\SwitchSimulator.exe");
-            Process.Start("C:\\Program Files (x86)\\General Atomics\\UPS_Sim\\UPSSimulator.exe");
+            try
+            {
+                if (aecChkBx.Checked)
+                {
+                    Process.Start(startApps[0]);
+                }
+
+                if (bscChkBx.Checked)
+                {
+                    Process.Start(startApps[1]);
+                }
+
+                if (ismChkBx.Checked)
+                {
+                    Process.Start(startApps[2]);
+                }
+
+                if (pickleChkBx.Checked)
+                {
+                    Process.Start(startApps[3]);
+                }
+
+                if (scsAChkBx.Checked)
+                {
+                    Process.Start(startApps[4]);
+                }
+
+                if (switchChkBx.Checked)
+                {
+                    Process.Start(startApps[5]);
+                }
+
+                if (upsChkBx.Checked)
+                {
+                    Process.Start(startApps[6]);
+                }
+
+                if (scsDChkBx.Checked)
+                {
+                    Process.Start(startApps[7]);
+                }
+
+                if (!aecChkBx.Checked && !bscChkBx.Checked && !ismChkBx.Checked && !pickleChkBx.Checked && !scsAChkBx.Checked
+                    && !scsDChkBx.Checked && !switchChkBx.Checked && !upsChkBx.Checked)
+                {
+                    MessageBox.Show("Please select the simulators to start");
+                }
+
+
+            }
+            catch
+            {
+                listBox1.Items.Add("No application has been selected to start");
+                
+            }
+
         }
 
         // Handles the LAN check boxes and either enables or disables through a called method
@@ -413,7 +1037,7 @@ namespace DCS_Configuration_Tool
             foreach (string indexChecked in checkedListBox1.Items)
             {
                 
-                listBox1.Items.Add(indexChecked.ToString() + ", is checked. Checked state is: " +
+                listBox1.Items.Add(indexChecked.ToString() + " Checked state is: " +
                                     checkedListBox1.GetItemCheckState(count).ToString() + ".");
 
                 if (checkedListBox1.GetItemChecked(count))
@@ -438,100 +1062,17 @@ namespace DCS_Configuration_Tool
         // Actual work to delete and add IP addresses
         private void SetIpNetwork(object sender, EventArgs e)
         {
-            if (radioButton1.Checked) // Full Setup
-            {
-                deleteIP(checkedListBox1.Items[0], hmapIP);               
-                addIP(checkedListBox1.Items[0], hmapIP);
+            /* This will be used for the Progress bar on the IP network setup when completed correctly
+             * 
+             * this.UpdateSims.Enabled = false;
+             * backgroundWorker1.WorkerReportsProgress = true;
+             * backgroundWorker1.RunWorkerAsync();
+             * Thread updateThread = new Thread(ConfigureIpNetwork);
+             * updateThread.Start();
+            */
 
-                deleteIP(checkedListBox1.Items[1], ags1IP);
-                addIP(checkedListBox1.Items[1], ags1IP);
+            ConfigureIpNetwork();
 
-                deleteIP(checkedListBox1.Items[2], ags2IP);
-                addIP(checkedListBox1.Items[2], ags2IP);
-
-                deleteIP(checkedListBox1.Items[3], admacsIp);
-                addIP(checkedListBox1.Items[3], admacsIp);
-
-                // Modify the .exe.config file for the BSC so that it works correctly
-                listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
-                String fullBSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                fullBSCtext = fullBSCtext.Replace(jctsBSCExeConfig, fullBSCExeConfig);
-                fullBSCtext = fullBSCtext.Replace(nonJctsBSCExeConfig, fullBSCExeConfig);
-                fullBSCtext = fullBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, fullBSCtext);
-
-                // Modify the .exe.config file for the DCS so that it works correctly
-                listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
-                String fullAECtext = System.IO.File.ReadAllText(aecConfigPath);
-                fullAECtext = fullAECtext.Replace(jctsAECExeConfig, fullAECExeConfig);
-                fullAECtext = fullAECtext.Replace(nonJctsAECExeconfig, fullAECExeConfig);
-                fullAECtext = fullAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, fullAECtext);
-           
-            }
-            
-            else if (radioButton2.Checked) // Non-JCTS
-            {
-                deleteIP(checkedListBox1.Items[0], hmapIP);
-                addIP(checkedListBox1.Items[0], jctsHmapIP);
-
-                deleteIP(checkedListBox1.Items[1], ags1IP);
-                addIP(checkedListBox1.Items[1], jctsAgs1IP);
-
-                deleteIP(checkedListBox1.Items[2], ags2IP);
-                addIP(checkedListBox1.Items[2], jctsAgs2IP);
-
-                deleteIP(checkedListBox1.Items[3], admacsIp);
-                addIP(checkedListBox1.Items[3], admacsIp);
-
-                // Modify the .exe.config file for the BSC so that it works correctly
-                listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
-                String nonJctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCExeConfig, nonJctsBSCExeConfig);
-                nonJctsBSCtext = nonJctsBSCtext.Replace(fullBSCExeConfig, nonJctsBSCExeConfig);
-                nonJctsBSCtext = nonJctsBSCtext.Replace(jctsBSCAddKey, nonJctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, nonJctsBSCtext);
-               
-
-                // Modify the .exe.config file for the DCS so that it works correctly
-                listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
-                String nonJctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
-                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECExeConfig, nonJctsAECExeconfig);
-                nonJctsAECtext = nonJctsAECtext.Replace(fullAECExeConfig, nonJctsAECExeconfig);
-                nonJctsAECtext = nonJctsAECtext.Replace(jctsAECAddKey, nonJctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, nonJctsAECtext);
-            }
-            else if (radioButton3.Checked) // JCTS
-            {
-                deleteIP(checkedListBox1.Items[0], hmapIP);
-                addIP(checkedListBox1.Items[0], njctsHmapIP);
-
-                deleteIP(checkedListBox1.Items[1], ags1IP);
-                addIP(checkedListBox1.Items[1], njctsAgs1IP);
-
-                deleteIP(checkedListBox1.Items[2], ags2IP);
-                addIP(checkedListBox1.Items[2], njctsAgs2IP);
-
-                deleteIP(checkedListBox1.Items[3], admacsIp);
-                addIP(checkedListBox1.Items[3], admacsIp);
-
-                // Modify the .exe.config file for the BSC so that it works correctly
-                listBox1.Items.Add("Configuring the BSCSimulator.exe.config file");
-                String jctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
-                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
-                jctsBSCtext = jctsBSCtext.Replace(fullBSCExeConfig, jctsBSCExeConfig);
-                jctsBSCtext = jctsBSCtext.Replace(nonJctsBSCAddKey, jctsBSCAddKey);
-                System.IO.File.WriteAllText(bscConfigPath, jctsBSCtext);
-
-                // Modify the .exe.config file for the DCS so that it works correctly
-                listBox1.Items.Add("Configuring the AECSimulator.exe.config file");
-                String jctsAECtext = System.IO.File.ReadAllText(aecConfigPath);
-                jctsAECtext = jctsAECtext.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
-                jctsAECtext = jctsAECtext.Replace(fullAECExeConfig, jctsAECExeConfig);
-                jctsAECtext = jctsAECtext.Replace(nonJctsAECAddKey, jctsAECAddKey);
-                System.IO.File.WriteAllText(aecConfigPath, jctsAECtext);
-            }
-            
         }
 
         // Checks the specified network based on which radial button is specified
@@ -542,23 +1083,81 @@ namespace DCS_Configuration_Tool
 
                 if (radioButton1.Checked)
                 {
+                    listBox1.Items.Add("Healthmap IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(hmapIP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("AGS 1 IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(ags1IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("AGS 2 IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(ags2IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("ADMACS IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(admacsIp);
+
+                    listBox1.Items.Add(String.Empty);
                 } 
                 else if (radioButton2.Checked)
                 {
+                    listBox1.Items.Add("JCTS Healthmap IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(jctsHmapIP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("JCTS AGS 1 IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(jctsAgs1IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("JCTS AGS 2 IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(jctsAgs2IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("ADMACS IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(admacsIp);
+
+                    listBox1.Items.Add(String.Empty);
                 }                
                 else if (radioButton3.Checked)
                 {
+                    listBox1.Items.Add("NON-JCTS Healthmap IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(njctsHmapIP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("NON-JCTS AGS 1 IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(njctsAgs1IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("NON-JCTS AGS 2 IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(njctsAgs2IP);
+
+                    listBox1.Items.Add(String.Empty);
+
+                    listBox1.Items.Add("ADMACS IP Check:");
+                    listBox1.Items.Add("-------------------------------------------------------");
+                    ipConnection(admacsIp);
+
+                    listBox1.Items.Add(String.Empty);
                 }
                 
             }
@@ -577,325 +1176,53 @@ namespace DCS_Configuration_Tool
         {
             listBox1.Items.Clear();
         }
-    }
 
-    // Class used to remove old apps, backup current apps, and place the new apps in the proper locations
-    class updateApps
-    {
-        public Progress_Form prgfrm = new Progress_Form();
-        private Form1 instance;
-        DirectoryInfo rootDirectory;
-        string aecPath = @"C:\";
-        static string path = @"C:\Program Files (x86)\General Atomics";
-        string[] appDirs = Directory.GetDirectories(path);
-        string[] desktopLinks;
-        string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
-                                "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator",
-                                "UPSSimulator"};
-
-        string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "SCS_D", "ScsA", "Switch", "UPS",
-                                "AEC", "ROCS", "SNMP"};
-
-        // Pattern for : name + eight numbers at the end
-        string rmPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+(\\d{8})$");
-        // Pattern for : name 
-        string mvPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+\\\\?$");
-        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-        // AddDirectory method is used to give the named directory certain permissions
-        public static void AddDirectorySecurity(string FileName, string Account, FileSystemRights Rights,
-                                                AccessControlType ControlType)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            // Create a new DirectoryInfo object
-            DirectoryInfo dInfo = new DirectoryInfo(FileName);
 
-            // Get a DirectorySecurity object that represents the 
-            // current security settings
-            DirectorySecurity dSecurity = dInfo.GetAccessControl();
-
-            // Add the FileSystemAccessRule to the security settings
-            dSecurity.AddAccessRule(new FileSystemAccessRule(Account, Rights, ControlType));
-
-            // Set the new access settings
-            dInfo.SetAccessControl(dSecurity);
         }
 
-
-        public void moveOldAec(string[] dirArr, string aecHome, string mainPath)
+        private void allChkBx_CheckedChanged(object sender, EventArgs e)
         {
-
-            string oldDCS = string.Format(@"\DCS_Sim_{0:MMddyyyy}", DateTime.Now);
-            string userName = @"hmuser";
-
-            for (int i = 0; i < dirArr.Length; i++)
+            if (allChkBx.Checked)
             {
-                if (dirArr[i] == mainPath + oldDCS)
-                {
-                    try
-                    {
-                        for (int j = 1; j < 5; j++)
-                        {
-                            int count = j;
-
-                            instance.listBox1.Items.Add("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
-                            prgfrm.LabelText = ("Moving old AEC Folders to  " + dirArr[i] + @"\AEC" + count);
-                            Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
-                        }
-
-                        instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\ID");
-                        prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\ID");
-                        Directory.Move(aecHome + @"\ID", dirArr[i] + @"\ID");
-
-                        if (Directory.Exists(aecHome + string.Format(@"\Users\{0}\DataFolder", userName)))
-                        {
-                            instance.listBox1.Items.Add("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
-                            prgfrm.LabelText = ("Moving old ID folder to  " + dirArr[i] + @"\DataFolder");
-                            Directory.Move(aecHome + string.Format(@"\Users\{0}\DataFolder", userName), dirArr[i] + @"\DataFolder");
-                        }
-                        else
-                        {
-                            MessageBox.Show("There is not a current DataFolder located at:" + aecHome +
-                                @"\Users\hmuser\");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        instance.listBox1.Items.Add("The AEC Folders already exists in " + dirArr[i] + 
-                            Environment.NewLine + "Error Message: " + e.Message);
-
-                    }
-                }
+                aecChkBx.Checked = true;
+                bscChkBx.Checked = true;
+                ismChkBx.Checked = true;
+                pickleChkBx.Checked = true;
+                switchChkBx.Checked = true;
+                upsChkBx.Checked = true;
+                scsAChkBx.Checked = true;
+                scsDChkBx.Checked = true;
+                movChkBx.Checked = true;
             }
+            else if (allChkBx.Checked == false)
+            {
+                aecChkBx.Checked = false;
+                bscChkBx.Checked = false;
+                ismChkBx.Checked = false;
+                pickleChkBx.Checked = false;
+                switchChkBx.Checked = false;
+                upsChkBx.Checked = false;
+                scsAChkBx.Checked = false;
+                scsDChkBx.Checked = false;
+                movChkBx.Checked = false;
+            }
+            
+
         }
 
-        // Move new AEC 1-4, ID, Datafolder folders and create a transfolder directory if not 
-        // created
-        public void mvNewAec(string[] dirArr, string aecHome, string mainPath)
+        private void groupBox5_Enter(object sender, EventArgs e)
         {
-            string userName = @"hmuser";
-            string newDCS = string.Format(@"{0}\DCS_Sim", mainPath);
-            string dataFldDir = string.Format(@"{0}Users\{1}\DataFolder", aecHome, userName);
-            string TransFldDir = string.Format(@"{0}Users\{1}\TransFolder", aecHome, userName);
 
-            for (int i = 0; i < dirArr.Length; i++)
-            {
-                Regex rg = new Regex(@"_[0-9]{8}");
-
-                dirArr[i] = rg.Replace(dirArr[i], string.Empty);
-
-                if (dirArr[i] == newDCS)
-                {
-                    try
-                    {
-                        for (int j = 1; j < 5; j++)
-                        {
-                            int count = j;
-                            instance.listBox1.Items.Add("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
-                            prgfrm.LabelText = ("Moving new AEC Folders to  " + aecHome + @"\AEC" + count);
-                            Directory.Move(dirArr[i] + @"\AEC" + count, aecHome + @"\AEC" + count);
-                            instance.listBox1.Items.Add("Adding permissions to   " + aecHome + @"\AEC" + count);
-                            prgfrm.LabelText = ("Adding permissions to   " + aecHome + @"\AEC" + count);
-                            AddDirectorySecurity(aecHome + @"\AEC" + count, Environment.UserName, FileSystemRights.FullControl,
-                                                        AccessControlType.Allow);
-                        }
-
-                        instance.listBox1.Items.Add("Moving new ID Folder to  " + aecHome + @"\ID");
-                        prgfrm.LabelText = ("Moving new ID Folder to  " + aecHome + @"\ID");
-                        Directory.Move(dirArr[i] + @"\ID", aecHome + @"\ID");
-                        instance.listBox1.Items.Add("Adding permissions to  " + aecHome + @"\ID");
-                        prgfrm.LabelText = ("Adding permissions to  " + aecHome + @"\ID");
-                        AddDirectorySecurity(aecHome + @"\ID", Environment.UserName, FileSystemRights.FullControl,
-                                                        AccessControlType.Allow);
-
-                        instance.listBox1.Items.Add("Moving new DataFolder Folder to  " + dataFldDir);
-                        prgfrm.LabelText = ("Moving new DataFolder Folder to  " + dataFldDir);
-                        Directory.Move(dirArr[i] + @"\DataFolder", dataFldDir);
-                        instance.listBox1.Items.Add("Adding permissions to  " + dataFldDir);
-                        prgfrm.LabelText = ("Adding permissions to  " + dataFldDir);
-                        AddDirectorySecurity(aecHome + @"\DataFolder", Environment.UserName, FileSystemRights.FullControl,
-                                                        AccessControlType.Allow);
-
-                        if (!Directory.Exists(TransFldDir))
-                        {
-                            instance.listBox1.Items.Add("Creating new TransFolder at  " + TransFldDir);
-                            prgfrm.LabelText = ("Creating new TransFolder at  " + TransFldDir);
-                            Directory.CreateDirectory(TransFldDir);
-                        }
-                        else if (Directory.Exists(TransFldDir))
-                        {
-                            instance.listBox1.Items.Add("The TransFolder Directory Exists");
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        instance.listBox1.Items.Add(e.Message);
-                    }
-                }
-            }
         }
 
-        public void cpASF(string srcName, string trgName)
-        {
-            string asfFile = Path.Combine(srcName, "AircraftSettingsFile.csv");
-            string asfLocation = Path.Combine(trgName, "AEC");
-
-            if (System.IO.File.Exists(asfFile))
-            {
-                for (int i = 1; i < 5; i++)
-                {
-                    instance.listBox1.Items.Add("Copying new ASF files from thumb drive");
-                    prgfrm.LabelText = ("Copying new ASF files from thumb drive");
-                    System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
-                }
-            }
-            else
-            {
-                instance.listBox1.Items.Add("AircraftSettingsFile.csv file missing on thumbdrive");
-            }
-        }
-
-        public void CreateShortcut(string[] appName, string mainPath, string[] gaDirs, string pattern)
+        private void groupBox3_Enter(object sender, EventArgs e)
         {
 
-            string shortcutAddress;
-            object shDesktop = (object)"Desktop";
-            WshShell shell = new WshShell();
-            int count = 0;
-
-            foreach (string dir in gaDirs)
-            {
-                // Regular expression with the rmPattern to find numbers at the end of the title
-                Match checkDir = Regex.Match(dir, pattern);
-
-
-                while (checkDir.Success)
-                {
-
-                    if (appName[count] == "WindowsFormsApplication1")
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ISM_Sim" + ".lnk";
-                        prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
-                        instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
-                    }
-                    else if (appName[count] == "ModbusTestClient")
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\PickleSwitchSim" + ".lnk";
-                        prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
-                        instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
-                    }
-                    else
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + appName[count] + ".lnk";
-                        prgfrm.LabelText = ("Created shortcut " + shortcutAddress);
-                        instance.listBox1.Items.Add("Created shortcut " + shortcutAddress);
-                    }
-
-                    IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
-                    shortcut.WorkingDirectory = checkDir + @"\";
-                    shortcut.TargetPath = checkDir + @"\" + appName[count] + ".exe";
-                    shortcut.Save();
-                    checkDir = checkDir.NextMatch();
-                }
-                count++;
-            }
-        }
-
-        public void DeleteShortcut(string[] appName, string srcDir, string[] delLink)
-        {
-            for (int i = 0; i < appName.Length; i++)
-            {
-                delLink = Directory.GetFiles(srcDir, string.Format("{0}*.lnk", appName[i]));
-
-                foreach (string link in delLink)
-                {
-                    instance.listBox1.Items.Add("Deleting " + link);
-                    prgfrm.LabelText = ("Deleting " + link);
-                    System.IO.File.Delete(link);
-                }
-            }
-
-            prgfrm.LabelText = String.Empty;
-        }
-
-
-        public updateApps(Form1 instance)
-        {
-            this.instance = instance;
-            // This is used to find all Folders that end in a date and delete them
-            foreach (string delDir in appDirs)
-            {
-                // Regular expression with the rmPattern to find numbers at the end of the title
-                Match rmDir = Regex.Match(delDir, rmPattern);
-
-                // While the regular expression rmDir is successful, 
-                //delete the current directory and files listed     
-                while (rmDir.Success)
-                {
-                    instance.listBox1.Items.Add("Deleting " + delDir.ToString());
-                    prgfrm.LabelText = ("Deleting " + delDir.ToString());
-                    //Delete the named folder and when set true delete everything within the folder
-                    Directory.Delete(rmDir.Value, true);
-                    // Look for the next matching folder
-                    rmDir = rmDir.NextMatch();
-                }
-            }
-
-            // Used to refresh the Directory listing to current status
-            string[] repDirs = Directory.GetDirectories(path);
-
-
-            // While the RegexEx mvDir is successful,
-            // rename the current folders used for the simulators
-            foreach (string repDir in repDirs)
-            {
-                // Regular expression with the mvPattern for currently used folders
-                Match mvDir = Regex.Match(repDir, mvPattern);
-
-
-                while (mvDir.Success)
-                {
-                    instance.listBox1.Items.Add("Creating Backup " + repDir.ToString());
-                    prgfrm.LabelText = ("Creating Backup " + repDir.ToString());
-                    //store a new string name of the folder with todays date appended to it
-                    string appName = string.Format("{0}_{1:MMddyyyy}", repDir, DateTime.Now);
-                    //Replace the old folder name with the new one
-                    Directory.Move(repDir, appName);
-                    // Find the next pattern matched folder
-                    mvDir = mvDir.NextMatch();
-                }
-            }
-
-            // Used to refresh the Directory listing to current status
-            string[] cpDirs = Directory.GetDirectories(path);
-
-            // Used to search any given removable drive (USB) that is mounted
-            foreach (DriveInfo removableDrive in DriveInfo.GetDrives().Where(
-                         drive => drive.DriveType == DriveType.Removable && drive.IsReady))
-            {
-                rootDirectory = removableDrive.RootDirectory;
-                string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
-
-                new Microsoft.VisualBasic.Devices.Computer().
-                    FileSystem.CopyDirectory(monitoredDirectory, path);
-            }
-
-            // Move old AEC's and ID folder to backup DCS folder
-            moveOldAec(cpDirs, aecPath, path);
-
-            // Move new AEC's, ID, and overwrite the old Datafolder to correct locations
-            mvNewAec(cpDirs, aecPath, path);
-
-            // Used to copy a newer ASF file to the C drive if the existing one is older
-            cpASF(rootDirectory.FullName, aecPath);
-
-            // Used to delete the current desktop shortcuts
-            DeleteShortcut(processName, desktopPath, desktopLinks);
-
-            // Used to create new shortcuts based on new executables
-            CreateShortcut(appProcess, path, cpDirs, mvPattern);
         }
     }
+
 
     public static class ExtensionMethods
     {
