@@ -32,7 +32,7 @@ namespace DCS_Configuration_Tool
         int ipCount;
         DirectoryInfo rootDirectory;
 
-        string logName = string.Format("DCSLog_{0:MMddyyyy}.txt", DateTime.Now);
+        string logName = string.Format("\\DCSLog_{0:MMddyyyy}.txt", DateTime.Now);
         string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
         string fullBSCExeConfig = "		<add key=\"countAECs\" value=\"0\"/>";
         string jctsBSCExeConfig = "     <add key=\"CountAECs\" value=\"4\"/> ";
@@ -120,7 +120,9 @@ namespace DCS_Configuration_Tool
             {
                 string add = text;
                 this.listBox1.Items.Add(add);
+                listBox1.SelectedIndex = listBox1.Items.Count - 1;
             }
+           
         }
   
         // Using a process to enable specified LANs
@@ -195,13 +197,16 @@ namespace DCS_Configuration_Tool
 
                 if (ipCount == arrLAN.Length)
                 {
+                    SetText(String.Empty);
                     listBox1.Items.Add("All IP addresses connected successfully");
                 }
                 else if (ipCount != arrLAN.Length)
                 {
+                    SetText(String.Empty);
                     listBox1.Items.Add("The following address connected unsuccessfullly");
                     for (int i = 0; i < noConnection.Length; i++)
                     {
+                        SetText(String.Empty);
                         string message = noConnection[i].ToString();
                         listBox1.Items.Add("Could not establish connection to " + message);
                     }
@@ -520,7 +525,15 @@ namespace DCS_Configuration_Tool
                             }
                             else if (Directory.Exists(aecHome + @"\AEC" + count))
                             {
-                                Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                                if (!Directory.Exists(dirArr[i] + @"\AEC" + count))
+                                {
+                                    Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                                }
+                                else if (Directory.Exists(dirArr[i] + @"\AEC" + count))
+                                {
+                                    Directory.Delete(dirArr[i] + @"\AEC" + count);
+                                    Directory.Move(aecHome + @"\AEC" + count, dirArr[i] + @"\AEC" + count);
+                                }
                             }
                         }
 
@@ -646,14 +659,14 @@ namespace DCS_Configuration_Tool
                 {
                     //listBox1.Items.Add("Copying new ASF files from thumb drive");
                     SetText("Copying new ASF files from thumb drive");
-                    if (!Directory.Exists(asfLocation + i + @"\AirCraftSettingsFile.csv"))
+                    if (!System.IO.File.Exists(asfLocation + i + @"\AircraftSettingsFile.csv"))
                     {
                         SetText(" Could not add asf to " + asfLocation + i);
                         SetText("The directory may not exist");
                     }
-                    else if (Directory.Exists(asfLocation + i + @"\AirCraftSettingsFile.csv"))
+                    else if (System.IO.File.Exists(asfLocation + i + @"\AircraftSettingsFile.csv"))
                     {
-                        System.IO.File.Copy(asfFile, asfLocation + i + @"\AirCraftSettingsFile.csv", true);
+                        System.IO.File.Copy(asfFile, asfLocation + i + @"\AircraftSettingsFile.csv", true);
                     }
                 }
             }
@@ -821,6 +834,13 @@ namespace DCS_Configuration_Tool
 
                 new Microsoft.VisualBasic.Devices.Computer().
                     FileSystem.CopyDirectory(monitoredDirectory, path);
+
+               
+            }
+
+            foreach (string thumbDir in Directory.GetDirectories(Path.Combine(rootDirectory.Name, "4WS")))
+            {
+                SetText("Updating Application from " + thumbDir);
             }
 
             // Move old AEC's and ID folder to backup DCS folder
@@ -965,7 +985,6 @@ namespace DCS_Configuration_Tool
 
             Thread updateThread = new Thread(updateApps);
             updateThread.Start();
-
         }
 
         // Use to stop all known Simulators running
@@ -1061,7 +1080,8 @@ namespace DCS_Configuration_Tool
             int count = 0;
             foreach (string indexChecked in checkedListBox1.Items)
             {
-                
+                SetText(String.Empty);
+                                    
                 listBox1.Items.Add(indexChecked.ToString() + " Checked state is: " +
                                     checkedListBox1.GetItemCheckState(count).ToString() + ".");
 
@@ -1076,6 +1096,8 @@ namespace DCS_Configuration_Tool
                 }
                 count = ++count;
             }
+
+            SetText(String.Empty);
         }
 
         // Empty, not used
@@ -1195,6 +1217,8 @@ namespace DCS_Configuration_Tool
         private void logFile_Click(object sender, EventArgs e)
         {
             logFile();
+
+            SetText("Log file has been saved at " + path);
         }
 
         private void deleteLog_Click(object sender, EventArgs e)
@@ -1257,6 +1281,11 @@ namespace DCS_Configuration_Tool
             AboutBox1 box = new AboutBox1();
 
             box.Show();
+            
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
             
         }
     }
