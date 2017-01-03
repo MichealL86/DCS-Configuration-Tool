@@ -11,7 +11,7 @@ using System.Net.NetworkInformation;
 using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
-
+using Microsoft.Office.Interop.Word;
 
 namespace DCS_Configuration_Tool
 {
@@ -741,6 +741,33 @@ namespace DCS_Configuration_Tool
             }
         }
 
+        public void CreateHelpFile()
+        {
+            object oMissing = System.Reflection.Missing.Value;
+            object oEndOfDoc = "\\endofdoc"; // endofdoc is a predefined bookmark
+
+            // Start Word and create a new document
+            Microsoft.Office.Interop.Word._Application oWord;
+            Microsoft.Office.Interop.Word._Document oDoc;
+            oWord = new Microsoft.Office.Interop.Word.Application();
+            oWord.Visible = true;
+            oDoc = oWord.Documents.Add(ref oMissing, ref oMissing, ref oMissing, ref oMissing);
+
+            // Insert a paragraph at the beginning of the document
+            Microsoft.Office.Interop.Word.Paragraph oPara1;
+            oPara1 = oDoc.Content.Paragraphs.Add(ref oMissing);
+            oPara1.Range.Text = "Heading 1";
+            oPara1.Range.Font.Bold = 1;
+            oPara1.Format.SpaceAfter = 24; //24 pt spacing after paragraph
+            oPara1.Range.InsertParagraphAfter();
+
+            //Insert a paragraph at the end of the document
+            Microsoft.Office.Interop.Word.Paragraph oPara2;
+            object oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara2 = oDoc.Content.Paragraphs.Add(ref oRng);
+
+        }
+
         // Use paint graphics to create a progress bar that shows the status inside of it
         public void paintProgress(string text)
         {
@@ -999,6 +1026,8 @@ namespace DCS_Configuration_Tool
 
             Thread updateThread = new Thread(updateApps);
             updateThread.Start();
+
+            SetText(String.Empty);
         }
 
         // Use to stop all known Simulators running
@@ -1020,6 +1049,8 @@ namespace DCS_Configuration_Tool
                     runningProcesses[i].WaitForExit();
                 }
             }
+
+            SetText(String.Empty);
         }
 
         // Used to start all simulators
@@ -1091,6 +1122,8 @@ namespace DCS_Configuration_Tool
                 listBox1.Items.Add("No application has been selected to start");
                 
             }
+
+            SetText(String.Empty);
 
         }
 
@@ -1186,6 +1219,8 @@ namespace DCS_Configuration_Tool
             this.button3.Enabled = true;
             this.button4.Enabled = true;
             this.button5.Enabled = true;
+
+            SetText(String.Empty);
         }
 
         // Checks the specified network based on which radial button is specified
@@ -1294,6 +1329,8 @@ namespace DCS_Configuration_Tool
             {
                 MessageBox.Show(pError.Message);
             }
+
+            SetText(String.Empty);
         }
 
         private void logFile_Click(object sender, EventArgs e)

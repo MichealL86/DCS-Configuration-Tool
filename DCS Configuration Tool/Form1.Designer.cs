@@ -129,7 +129,7 @@
             this.checkedListBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.checkedListBox1.Name = "checkedListBox1";
             this.checkedListBox1.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.checkedListBox1.Size = new System.Drawing.Size(141, 68);
+            this.checkedListBox1.Size = new System.Drawing.Size(141, 85);
             this.checkedListBox1.TabIndex = 4;
             this.checkedListBox1.SelectedIndexChanged += new System.EventHandler(this.checkedListBox1_SelectedIndexChanged);
             // 
