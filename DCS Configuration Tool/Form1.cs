@@ -953,6 +953,11 @@ namespace DCS_Configuration_Tool
                 // Wait 1000 milliseconds
                 Thread.Sleep(1000);
                 this.UpdateSims.Enabled = true;
+                this.button1.Enabled = true;
+                this.button2.Enabled = true;
+                this.button3.Enabled = true;
+                this.button4.Enabled = true;
+                this.button5.Enabled = true;
                 progressBar1.Value = 0;
                 progressBar1.Visible = false;
                 //prgfrm.Close();
@@ -983,6 +988,11 @@ namespace DCS_Configuration_Tool
 
             this.progressBar1.Visible = true;
             this.UpdateSims.Enabled = false;
+            this.button1.Enabled = false;
+            this.button2.Enabled = false;
+            this.button3.Enabled = false;
+            this.button4.Enabled = false;
+            this.button5.Enabled = false;
             backgroundWorker1.WorkerReportsProgress = true;
 
             backgroundWorker1.RunWorkerAsync();
@@ -1150,6 +1160,13 @@ namespace DCS_Configuration_Tool
             // Place GetProcesses on a variable
             var runningProcesses = Process.GetProcesses();
 
+            this.UpdateSims.Enabled = false;
+            this.button1.Enabled = false;
+            this.button2.Enabled = false;
+            this.button3.Enabled = false;
+            this.button4.Enabled = false;
+            this.button5.Enabled = false;
+
             // Use a for loop to cycle through the processKill array to stop the named applications
             for (int i = 0; i < runningProcesses.Length; i++)
             {
@@ -1163,11 +1180,24 @@ namespace DCS_Configuration_Tool
 
             ConfigureIpNetwork();
 
+            this.UpdateSims.Enabled = true;
+            this.button1.Enabled = true;
+            this.button2.Enabled = true;
+            this.button3.Enabled = true;
+            this.button4.Enabled = true;
+            this.button5.Enabled = true;
         }
 
         // Checks the specified network based on which radial button is specified
         private void CheckNetwork(object sender, EventArgs e)
         {
+            this.UpdateSims.Enabled = false;
+            this.button1.Enabled = false;
+            this.button2.Enabled = false;
+            this.button3.Enabled = false;
+            this.button4.Enabled = false;
+            this.button5.Enabled = false;
+
             try
             {
                 SetText("Date Time:" + DateTime.Now);
@@ -1251,7 +1281,14 @@ namespace DCS_Configuration_Tool
 
                     listBox1.Items.Add(String.Empty);
                 }
-                
+
+                this.UpdateSims.Enabled = true;
+                this.button1.Enabled = true;
+                this.button2.Enabled = true;
+                this.button3.Enabled = true;
+                this.button4.Enabled = true;
+                this.button5.Enabled = true;
+
             }
             catch (PingException pError)
             {
