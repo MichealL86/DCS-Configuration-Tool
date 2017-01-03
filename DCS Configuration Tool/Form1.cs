@@ -11,8 +11,8 @@ using System.Net.NetworkInformation;
 using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
-using DCS_Configuration_Tool;
-using System.Threading.Tasks;
+using System.Windows;
+using System.Collections.Specialized;
 
 namespace DCS_Configuration_Tool
 {
@@ -22,7 +22,7 @@ namespace DCS_Configuration_Tool
     public partial class Form1 : Form
     {
         delegate void SetTextCallback(string text);
-        ListBoxBehavior auto = new ListBoxBehavior();
+
 
         string aecPath = @"C:\";
         static string path = @"C:\Program Files (x86)\General Atomics";
@@ -122,8 +122,7 @@ namespace DCS_Configuration_Tool
             {
                 string add = text;
                 this.listBox1.Items.Add(add);
-                //listBox1.SelectedIndex = listBox1.Items.Count - 1;
-                //< ListBox ItemsSource = "{Binding SourceCollection}" lb: ListBoxBehavior.ScrollOnNewItem = "true" />
+                listBox1.SelectedIndex = listBox1.Items.Count - 1;
             }
            
         }
@@ -1320,6 +1319,7 @@ namespace DCS_Configuration_Tool
         }
     }
 
+    /*
     class ListBoxBehavior
     {
         static readonly System.Collections.Generic.Dictionary<ListBox, Capture> Associations =
@@ -1401,7 +1401,7 @@ namespace DCS_Configuration_Tool
             public Capture(ListBox listBox)
             {
                 this.listBox = listBox;
-                incc = listBox.ItemsSource as INotifyCollectionChanged;
+                incc = listBox.ItemSource as INotifyCollectionChanged;
                 if (incc != null)
                 {
                     incc.CollectionChanged += incc_CollectionChanged;
@@ -1424,4 +1424,5 @@ namespace DCS_Configuration_Tool
             }
         }
     }
+    */
 }

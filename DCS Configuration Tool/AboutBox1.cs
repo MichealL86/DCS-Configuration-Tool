@@ -120,5 +120,10 @@ namespace DCS_Configuration_Tool
         {
 
         }
+
+        private void tableLayoutPanel_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }
