@@ -12,6 +12,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
 using Microsoft.Office.Interop.Word;
+using Microsoft.Win32;
 
 namespace DCS_Configuration_Tool
 {
@@ -883,6 +884,28 @@ namespace DCS_Configuration_Tool
             this.Close();
         }
 
+        public void CreateTxtFile()
+        {
+            // Create a string array that consists of the help file contents
+            string[] lines = {"DCS CONFIGURATION HELP ", string.Empty, string.Empty,
+            "-----------------------------------------------------------", "                    TABLE OF CONTENTS",
+                "-----------------------------------------------------------",
+            "1) LAN Configuration", "2) IP Configuration", "3) Simulator Configuration", "4) Upadating the Simulators", "5) Log",
+            String.Empty, String.Empty, "                   LAN Configuration", "-----------------------------------------------------------", string.Empty,
+            "Check Boxes:", "   Each check box is associated with the listed name next to it.", "   Checking a box will enable the specified LAN, while leaving a",
+            "   box unchecked will disable the LAN", "   Any Changes made for a LAN will start unless the 'SET LAN'", "     button has been used." };
+
+            if (!System.IO.File.Exists(path + "\\HelpFile.rtf"))
+            {
+                System.IO.File.CreateText(path + "\\HelpFile.rtf");               
+                System.IO.File.WriteAllLines(path + "\\Helpfile.rtf", lines);
+            }
+            else
+            {
+                System.IO.File.WriteAllLines(path + "\\Helpfile.rtf", lines);
+            }
+        }
+
         // Use paint graphics to create a progress bar that shows the status inside of it
         public void paintProgress(string text)
         {
@@ -1507,7 +1530,18 @@ namespace DCS_Configuration_Tool
 
         private void formHelpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreateHelpFile();
+            var regWord = Registry.ClassesRoot.OpenSubKey("Word.Application");
+
+            if (regWord == null)
+            { 
+               CreateTxtFile(); 
+            }
+            else
+            {
+                CreateHelpFile();
+            }
+
+            //Process.Start(path + "\\HelpFile.rtf");
         }
 
         private void aboutToolToolStripMenuItem_Click(object sender, EventArgs e)
