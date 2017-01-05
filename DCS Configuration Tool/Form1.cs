@@ -757,7 +757,7 @@ namespace DCS_Configuration_Tool
             // Insert a paragraph at the beginning of the document
             Microsoft.Office.Interop.Word.Paragraph oPara1;
             oPara1 = oDoc.Content.Paragraphs.Add(ref oMissing);
-            oPara1.Range.Text = "Heading 1";
+            oPara1.Range.Text = "DCS Configuration Use";
             oPara1.Range.Font.Bold = 1;
             oPara1.Format.SpaceAfter = 24; //24 pt spacing after paragraph
             oPara1.Range.InsertParagraphAfter();
@@ -766,7 +766,7 @@ namespace DCS_Configuration_Tool
             Microsoft.Office.Interop.Word.Paragraph oPara2;
             object oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oPara2 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara2.Range.Text = "Heading 2";
+            oPara2.Range.Text = "LAN Configuration";
             oPara2.Format.SpaceAfter = 6;
             oPara2.Range.InsertParagraphAfter();
 
@@ -774,7 +774,7 @@ namespace DCS_Configuration_Tool
             Microsoft.Office.Interop.Word.Paragraph oPara3;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oPara3 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara3.Range.Text = "This is a sentence of normal text. Now here is a table:";
+            oPara3.Range.Text = "This group is used to enable a LAN if the specific check box of the LAN is checked.";
             oPara3.Range.Font.Bold = 0;
             oPara3.Format.SpaceAfter = 24;
             oPara3.Range.InsertParagraphAfter();
@@ -782,8 +782,11 @@ namespace DCS_Configuration_Tool
             // Insert a 3 x 5 table, fill it with data, and make the first row bold and italic
             Microsoft.Office.Interop.Word.Table oTable;
             Microsoft.Office.Interop.Word.Range wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oTable = oDoc.Tables.Add(wrdRng, 3, 5, ref oMissing, ref oMissing);
+            oTable = oDoc.Tables.Add(wrdRng, 2, 5, ref oMissing, ref oMissing);
             oTable.Range.ParagraphFormat.SpaceAfter = 6;
+
+
+            /*
             int r, c;
             string strText;
             for (r = 1; r <= 3; r++)
@@ -792,29 +795,57 @@ namespace DCS_Configuration_Tool
                     strText = "r" + r + "c" + c;
                     oTable.Cell(r, c).Range.Text = strText;
                 }
+            */
+
+            // Header Tittles
+            oTable.Cell(1,1).Range.Text = "HMS LAN";
+            oTable.Cell(1,2).Range.Text = "AGS LAN 1";
+            oTable.Cell(1,3).Range.Text = "AGS LAN 2";
+            oTable.Cell(1,4).Range.Text = "ADMACS LAN";
+            oTable.Cell(1,5).Range.Text = "SET LAN Button";
 
             oTable.Rows[1].Range.Font.Bold = 1;
             oTable.Rows[1].Range.Font.Italic = 1;
 
-            // Add some text after the table
+            oTable.Cell(2,1).Range.Text = "Checking this box will enable the Health map LAN. Keeping this blank and clicking the 'SET LAN' button will disable it";
+            oTable.Cell(2,2).Range.Text = "Checking this box will enable the AGS 1 LAN. Keeping this blank and clicking the 'SET LAN' button will disable it";
+            oTable.Cell(2,3).Range.Text = "Checking this box will enable the AGS 2 LAN. Keeping this blank and clicking the 'SET LAN' button will disable it";
+            oTable.Cell(2,4).Range.Text = "Checking this box will enable the ADMACS LAN. Keeping this blank and clicking the 'SET LAN' button will disable it";
+            oTable.Cell(2,5).Range.Text = "This button will enable/disable LANs when pressed";
+
+            // Insert a paragraph at the end of the document
             Microsoft.Office.Interop.Word.Paragraph oPara4;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oPara4 = oDoc.Content.Paragraphs.Add(ref oRng);
             oPara4.Range.InsertParagraphBefore();
-            oPara4.Range.Text = "And here's another table:";
-            oPara4.Format.SpaceAfter = 24;
+            oPara4.Range.Text = "IP Configuration";
+            oPara4.Range.Font.Bold = 1;
+            oPara4.Format.SpaceAfter = 6;
             oPara4.Range.InsertParagraphAfter();
+
+            // Add some text after the table
+            Microsoft.Office.Interop.Word.Paragraph oPara5;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara5 = oDoc.Content.Paragraphs.Add(ref oRng);
+            //oPara5.Range.InsertParagraphBefore();
+            oPara5.Range.Text = "And here's another table:";
+            oPara4.Range.Font.Bold = 0;
+            oPara5.Format.SpaceAfter = 24;
+            oPara5.Range.InsertParagraphAfter();
 
             // Insert a 5 x 2 table, fill it with data, and change the column widths
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oTable = oDoc.Tables.Add(wrdRng, 5, 2, ref oMissing, ref oMissing);
             oTable.Range.ParagraphFormat.SpaceAfter = 6;
+
+            /*
             for (r = 1; r <= 5; r++)
                 for (c = 1; c <= 2; c++)
                 {
                     strText = "r" + r + "c" + c;
                     oTable.Cell(r, c).Range.Text = strText;
                 }
+            */
 
             oTable.Columns[1].Width = oWord.InchesToPoints(2); // Change width of columns 1 & 2
             oTable.Columns[2].Width = oWord.InchesToPoints(3);
@@ -886,23 +917,44 @@ namespace DCS_Configuration_Tool
 
         public void CreateTxtFile()
         {
+            StreamWriter help;
+
             // Create a string array that consists of the help file contents
             string[] lines = {"DCS CONFIGURATION HELP ", string.Empty, string.Empty,
             "-----------------------------------------------------------", "                    TABLE OF CONTENTS",
                 "-----------------------------------------------------------",
-            "1) LAN Configuration", "2) IP Configuration", "3) Simulator Configuration", "4) Upadating the Simulators", "5) Log",
-            String.Empty, String.Empty, "                   LAN Configuration", "-----------------------------------------------------------", string.Empty,
+            "1) LAN Configuration", "2) IP Configuration", "3) Simulator Configuration", "4) Updating the Simulators", "5) Using The Log Buttons",
+            string.Empty, string.Empty, "                    LAN Configuration", "-----------------------------------------------------------", string.Empty,
             "Check Boxes:", "   Each check box is associated with the listed name next to it.", "   Checking a box will enable the specified LAN, while leaving a",
-            "   box unchecked will disable the LAN", "   Any Changes made for a LAN will start unless the 'SET LAN'", "     button has been used." };
+            "   box unchecked will disable the LAN.", string.Empty, "SET LAN Button:", "   Any Changes made for a LAN will not start unless the 'SET",
+                "   LAN' button has been used.", string.Empty, string.Empty, "                    IP Configuration",
+            "-----------------------------------------------------------", string.Empty, "Full IP Network Button:", "  This button is used to fully configure/test all IP addresses",
+            string.Empty, "JCTS IP Network Button:", "  This button is used to configure/test the JCTS IP addresses", string.Empty, "NON-JCTS IP Network Button:",
+            "  This button is used to configure/test the Non-JCTS IP", "  addresses", string.Empty, "SET IP NETWORK Button:", "  This button removes all IP addresses, adds IP addresses",
+            "  based on the radial button selected, and reconfigures", "  the .exe.config files for the AEC and BSC tabs", string.Empty, "TEST IP Button:", "  This button is to test the existing IP addresses comparing it", "  to the radial button selected",
+            string.Empty, string.Empty, "                    Simulator Configuration", "-----------------------------------------------------------",
+            string.Empty, "Check Boxes:", "   Each check box represents the application that can be", "   started or stopped based on being checked/unchecked",
+            string.Empty, "Start Button:", "   This start the simulators that have a check box selected", string.Empty, "Stop Button:",
+            "  This stops the simulators that do not have a check box", "selected", string.Empty, string.Empty, "                    Update Simulators",
+            "-----------------------------------------------------------", string.Empty, "UPDATE Button:", "   This button is used to Delete the current backups",
+            "   directories of each simulator, create new backups", "   of the current directories, move the current additional",
+            "   folders (AEC, Datafolder, Etc) to the newly created backup", "   directories, Move all new directories and files",
+            "   found on the attached thumb drives to the proper location,", "   move the additional directories/files to the",
+            "   proper locations, give the additional directories/files the", "     right permissions for use, delete all old shortcuts",
+            "   and create all new shortcuts.", string.Empty, string.Empty, "                    Using The Log Buttons",
+            "-----------------------------------------------------------", string.Empty, "SAVE FILE Button:", "   This button will save a log file generated from the",
+            "   listbox on the application. It stores the log in the", "   General Atomics directory", string.Empty, "CLEAR Button:",
+            "   This button will clear all text in the list box"};
 
-            if (!System.IO.File.Exists(path + "\\HelpFile.rtf"))
+            if (!System.IO.File.Exists(path + "\\Help File.rtf"))
             {
-                System.IO.File.CreateText(path + "\\HelpFile.rtf");               
-                System.IO.File.WriteAllLines(path + "\\Helpfile.rtf", lines);
+                help = new StreamWriter(path + "\\Help File.rtf");
+                help.Close();             
+                System.IO.File.WriteAllLines(path + "\\Help file.rtf", lines);
             }
             else
             {
-                System.IO.File.WriteAllLines(path + "\\Helpfile.rtf", lines);
+                System.IO.File.WriteAllLines(path + "\\Help file.rtf", lines);
             }
         }
 
@@ -1534,14 +1586,15 @@ namespace DCS_Configuration_Tool
 
             if (regWord == null)
             { 
-               CreateTxtFile(); 
+               CreateTxtFile();
+               Process.Start(path + "\\Help File.rtf");
             }
             else
             {
                 CreateHelpFile();
             }
 
-            //Process.Start(path + "\\HelpFile.rtf");
+
         }
 
         private void aboutToolToolStripMenuItem_Click(object sender, EventArgs e)
