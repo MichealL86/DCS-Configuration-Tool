@@ -745,7 +745,11 @@ namespace DCS_Configuration_Tool
         public void CreateHelpFile()
         {
             string lanConfigPic = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\LAN Configuration.PNG";
-            
+            string ipConfigPic = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\IP Configuration.PNG";
+            string simConfigPic = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\Simulator Configuration.PNG";
+            string updateSimPic = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\Update Simulators.PNG";
+            string logPic = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\Log.PNG";
+
 
 
             object oMissing = System.Reflection.Missing.Value;
@@ -787,43 +791,30 @@ namespace DCS_Configuration_Tool
             oPara3.Range.InsertParagraphAfter();
 
             // Add the LAN Configuration picture
+            Microsoft.Office.Interop.Word.Table oPicTable;
             Microsoft.Office.Interop.Word.Range wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            Microsoft.Office.Interop.Word.InlineShape lanPic = wrdRng.InlineShapes.AddPicture(lanConfigPic, oMissing, oMissing, oMissing);
-            
+            oPicTable = oDoc.Tables.Add(wrdRng, 1, 1, ref oMissing, ref oMissing);
+            oPicTable.Range.InsertParagraphBefore();
+            oPicTable.Range.ParagraphFormat.SpaceAfter = 6;
+            oPicTable.Cell(1, 1).Range.InlineShapes.AddPicture(lanConfigPic, oMissing, oMissing, oMissing);
+            oPicTable.Columns[1].Width = oWord.InchesToPoints(2); // Change width of columns 1
+            oPicTable.Borders.Enable = 1;
 
-            // Format the picture
-            Microsoft.Office.Interop.Word.Shape shape = lanPic.ConvertToShape();
+            // Insert a description of the picture
+            Microsoft.Office.Interop.Word.Paragraph oPara4;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara4 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara4.Range.Text = "LAN Configuration Group";
+            oPara4.Range.Font.Bold = 0;
+            oPara4.Range.Font.Italic = 1;
+            oPara4.Format.SpaceAfter = 24;
+            oPara4.Range.InsertParagraphAfter();
 
-            /*
-            // Scale uniformly by 50%
-            shape.LockAspectRatio = Microsoft.Office.Core.MsoTriState.msoTrue;
-            shape.ScaleHeight(0.5f, Microsoft.Office.Core.MsoTriState.msoTrue, Microsoft.Office.Core.MsoScaleFrom.msoScaleFromTopLeft);
-            */
-
-            // Align the picture on the upper right
-            shape.Left = (float)Microsoft.Office.Interop.Word.WdShapePosition.wdShapeLeft;
-           // shape.Top = (float)Microsoft.Office.Interop.Word.WdShapePosition.wdShapeTop;
-
-            
-
-
-            // Insert a 3 x 5 table, fill it with data, and make the first row bold and italic
             Microsoft.Office.Interop.Word.Table oTable;
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oTable = oDoc.Tables.Add(wrdRng, 2, 5, ref oMissing, ref oMissing);
+            oTable.Range.InsertParagraphBefore();
             oTable.Range.ParagraphFormat.SpaceAfter = 6;
-
-
-            /*
-            int r, c;
-            string strText;
-            for (r = 1; r <= 3; r++)
-                for (c = 1; c <= 5; c++)
-                {
-                    strText = "r" + r + "c" + c;
-                    oTable.Cell(r, c).Range.Text = strText;
-                }
-            */
 
             // Header Tittles
             oTable.Cell(1,1).Range.Text = "HMS LAN";
@@ -842,38 +833,48 @@ namespace DCS_Configuration_Tool
             oTable.Cell(2,5).Range.Text = "This button will enable/disable LANs when pressed";
 
             // Insert a tittle at the end of what was written last
-            Microsoft.Office.Interop.Word.Paragraph oPara4;
-            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara4 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara4.Range.InsertParagraphBefore();
-            oPara4.Range.Text = "IP Configuration";
-            oPara4.Range.Font.Bold = 1;
-            oPara4.Format.SpaceAfter = 6;
-            oPara4.Range.InsertParagraphAfter();
-
-            // Add some text after the table
             Microsoft.Office.Interop.Word.Paragraph oPara5;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oPara5 = oDoc.Content.Paragraphs.Add(ref oRng);
-            //oPara5.Range.InsertParagraphBefore();
-            oPara5.Range.Text = "This group is used to test or configure a full, JCTS, or NON-JCTS IP Network.";
-            oPara5.Range.Font.Bold = 0;
-            oPara5.Format.SpaceAfter = 24;
+            oPara5.Range.InsertParagraphBefore();
+            oPara5.Range.Text = "IP Configuration";
+            oPara5.Range.Font.Bold = 1;
+            oPara5.Format.SpaceAfter = 6;
             oPara5.Range.InsertParagraphAfter();
+
+            // Add some text after the table
+            Microsoft.Office.Interop.Word.Paragraph oPara6;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara6 = oDoc.Content.Paragraphs.Add(ref oRng);
+            //oPara5.Range.InsertParagraphBefore();
+            oPara6.Range.Text = "This group is used to test or configure a full, JCTS, or NON-JCTS IP Network.";
+            oPara6.Range.Font.Bold = 0;
+            oPara6.Format.SpaceAfter = 24;
+            oPara6.Range.InsertParagraphAfter();
+
+            // Add the IP Configuration picture
+            wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPicTable = oDoc.Tables.Add(wrdRng, 1, 1, ref oMissing, ref oMissing);
+            oPicTable.Range.InsertParagraphBefore();
+            oPicTable.Range.ParagraphFormat.SpaceAfter = 6;
+            oPicTable.Cell(1, 1).Range.InlineShapes.AddPicture(ipConfigPic, oMissing, oMissing, oMissing);
+            oPicTable.Columns[1].Width = oWord.InchesToPoints(2); // Change width of columns 1
+            oPicTable.Borders.Enable = 1;
+
+            // Insert a description of the picture
+            Microsoft.Office.Interop.Word.Paragraph oPara7;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara7 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara7.Range.Text = "IP Configuration Group";
+            oPara7.Range.Font.Bold = 0;
+            oPara7.Range.Font.Italic = 1;
+            oPara7.Format.SpaceAfter = 24;
+            oPara7.Range.InsertParagraphAfter();
 
             // Insert a 5 x 2 table, fill it with data, and change the column widths
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
             oTable = oDoc.Tables.Add(wrdRng, 2, 5, ref oMissing, ref oMissing);
             oTable.Range.ParagraphFormat.SpaceAfter = 6;
-
-            /*
-            for (r = 1; r <= 5; r++)
-                for (c = 1; c <= 2; c++)
-                {
-                    strText = "r" + r + "c" + c;
-                    oTable.Cell(r, c).Range.Text = strText;
-                }
-            */
 
             oTable.Cell(1, 1).Range.Text = "FULL IP NETWORK";
             oTable.Cell(1, 2).Range.Text = "JCTS IP NETWORK";
@@ -893,7 +894,7 @@ namespace DCS_Configuration_Tool
             /*
             oTable.Columns[1].Width = oWord.InchesToPoints(2); // Change width of columns 1 & 2
             oTable.Columns[2].Width = oWord.InchesToPoints(3);
-            */
+            
 
             // Keep inserting text. When you get to 7 inches from top of the document, insert a hard page break
             object oPos;
@@ -910,7 +911,6 @@ namespace DCS_Configuration_Tool
             }
             while (dPos >= Convert.ToDouble(oPos));
 
-            /*
             object oCollapseEnd = Microsoft.Office.Interop.Word.WdCollapseDirection.wdCollapseEnd;
             object oPageBreak = Microsoft.Office.Interop.Word.WdBreakType.wdPageBreak;
             wrdRng.Collapse(ref oCollapseEnd);
@@ -919,29 +919,48 @@ namespace DCS_Configuration_Tool
             */
 
             // Insert a paragraph at the beginning of the document
-            Microsoft.Office.Interop.Word.Paragraph oPara6;
-            oPara6 = oDoc.Content.Paragraphs.Add(ref oMissing);
-            oPara6.Range.Text = "DCS Configuration Use";
-            oPara6.Range.Font.Bold = 1;
-            oPara6.Format.SpaceAfter = 24; //24 pt spacing after paragraph
-            oPara6.Range.InsertParagraphAfter();
+            Microsoft.Office.Interop.Word.Paragraph oPara8;
+            oPara8 = oDoc.Content.Paragraphs.Add(ref oMissing);
+            oPara8.Range.Text = "DCS Configuration Use";
+            oPara8.Range.Font.Bold = 1;
+            oPara8.Format.SpaceAfter = 24; //24 pt spacing after paragraph
+            oPara8.Range.InsertParagraphAfter();
 
             // Insert a paragraph at the end of the document
-            Microsoft.Office.Interop.Word.Paragraph oPara7;
+            Microsoft.Office.Interop.Word.Paragraph oPara9;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara7 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara7.Range.Text = "Simulator Configuration";
-            oPara7.Format.SpaceAfter = 6;
-            oPara7.Range.InsertParagraphAfter();
+            oPara9 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara9.Range.Text = "Simulator Configuration";
+            oPara9.Format.SpaceAfter = 6;
+            oPara9.Range.InsertParagraphAfter();
 
             // Insert another paragraph
-            Microsoft.Office.Interop.Word.Paragraph oPara8;
+            Microsoft.Office.Interop.Word.Paragraph oPara10;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara8 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara8.Range.Text = "This group is used to start/stop the specified simulator.";
-            oPara8.Range.Font.Bold = 0;
-            oPara8.Format.SpaceAfter = 24;
-            oPara8.Range.InsertParagraphAfter();
+            oPara10 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara10.Range.Text = "This group is used to start/stop the specified simulator.";
+            oPara10.Range.Font.Bold = 0;
+            oPara10.Format.SpaceAfter = 24;
+            oPara10.Range.InsertParagraphAfter();
+
+            // Add the Simulator Configuration picture
+            wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPicTable = oDoc.Tables.Add(wrdRng, 1, 1, ref oMissing, ref oMissing);
+            oPicTable.Range.InsertParagraphBefore();
+            oPicTable.Range.ParagraphFormat.SpaceAfter = 6;
+            oPicTable.Cell(1, 1).Range.InlineShapes.AddPicture(simConfigPic, oMissing, oMissing, oMissing);
+            oPicTable.Columns[1].Width = oWord.InchesToPoints(3); // Change width of columns 1
+            oPicTable.Borders.Enable = 1;
+
+            // Insert a description of the picture
+            Microsoft.Office.Interop.Word.Paragraph oPara11;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara11 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara11.Range.Text = "Simulator Configuration Group";
+            oPara11.Range.Font.Bold = 0;
+            oPara11.Range.Font.Italic = 1;
+            oPara11.Format.SpaceAfter = 24;
+            oPara11.Range.InsertParagraphAfter();
 
             // Insert a 5 x 2 table, fill it with data, and change the column widths
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
@@ -963,23 +982,42 @@ namespace DCS_Configuration_Tool
             oTable.Cell(2, 3).Range.Text = "This button will stop will start each simulator that has been selected in the check box selection area";
 
             // Insert a paragraph at the end of the document
-            Microsoft.Office.Interop.Word.Paragraph oPara9;
+            Microsoft.Office.Interop.Word.Paragraph oPara12;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara9 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara9.Range.InsertParagraphBefore();
-            oPara9.Range.Text = "Update Simulators";
-            oPara9.Range.Font.Bold = 1;
-            oPara9.Format.SpaceAfter = 6;
-            oPara9.Range.InsertParagraphAfter();
+            oPara12 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara12.Range.InsertParagraphBefore();
+            oPara12.Range.Text = "Update Simulators";
+            oPara12.Range.Font.Bold = 1;
+            oPara12.Format.SpaceAfter = 6;
+            oPara12.Range.InsertParagraphAfter();
 
             // Insert another paragraph
-            Microsoft.Office.Interop.Word.Paragraph oPara10;
+            Microsoft.Office.Interop.Word.Paragraph oPara13;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara10 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara10.Range.Text = "This group is used to update the simulators with the version of simulators located on the users thumb drives.";
-            oPara10.Range.Font.Bold = 0;
-            oPara10.Format.SpaceAfter = 24;
-            oPara10.Range.InsertParagraphAfter();
+            oPara13 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara13.Range.Text = "This group is used to update the simulators with the version of simulators located on the users thumb drives.";
+            oPara13.Range.Font.Bold = 0;
+            oPara13.Format.SpaceAfter = 24;
+            oPara13.Range.InsertParagraphAfter();
+
+            // Add the Update Simulator Configuration picture
+            wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPicTable = oDoc.Tables.Add(wrdRng, 1, 1, ref oMissing, ref oMissing);
+            oPicTable.Range.InsertParagraphBefore();
+            oPicTable.Range.ParagraphFormat.SpaceAfter = 6;
+            oPicTable.Cell(1, 1).Range.InlineShapes.AddPicture(updateSimPic, oMissing, oMissing, oMissing);
+            oPicTable.Columns[1].Width = oWord.InchesToPoints(3); // Change width of columns 1
+            oPicTable.Borders.Enable = 1;
+
+            // Insert a description of the picture
+            Microsoft.Office.Interop.Word.Paragraph oPara14;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara14 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara14.Range.Text = "Update Simulator Group";
+            oPara14.Range.Font.Bold = 0;
+            oPara14.Range.Font.Italic = 1;
+            oPara14.Format.SpaceAfter = 24;
+            oPara14.Range.InsertParagraphAfter();
 
             // Insert a 5 x 2 table, fill it with data, and change the column widths
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
@@ -997,23 +1035,42 @@ namespace DCS_Configuration_Tool
                 " location, copy current ASF file to the AEC directories, delete current shortcuts, and create new shortcuts.";
 
             // Insert a paragraph at the end of the document
-            Microsoft.Office.Interop.Word.Paragraph oPara11;
+            Microsoft.Office.Interop.Word.Paragraph oPara15;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara11 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara11.Range.InsertParagraphBefore();
-            oPara11.Range.Text = "Log";
-            oPara11.Range.Font.Bold = 1;
-            oPara11.Format.SpaceAfter = 6;
-            oPara11.Range.InsertParagraphAfter();
+            oPara15 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara15.Range.InsertParagraphBefore();
+            oPara15.Range.Text = "Log";
+            oPara15.Range.Font.Bold = 1;
+            oPara15.Format.SpaceAfter = 6;
+            oPara15.Range.InsertParagraphAfter();
 
             // Insert another paragraph
-            Microsoft.Office.Interop.Word.Paragraph oPara12;
+            Microsoft.Office.Interop.Word.Paragraph oPara16;
             oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oPara12 = oDoc.Content.Paragraphs.Add(ref oRng);
-            oPara12.Range.Text = "This group is used to save a log file to the General Atomics directory and to clear the list box on the tool.";
-            oPara12.Range.Font.Bold = 0;
-            oPara12.Format.SpaceAfter = 24;
-            oPara12.Range.InsertParagraphAfter();
+            oPara16 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara16.Range.Text = "This group is used to save a log file to the General Atomics directory and to clear the list box on the tool.";
+            oPara16.Range.Font.Bold = 0;
+            oPara16.Format.SpaceAfter = 24;
+            oPara16.Range.InsertParagraphAfter();
+
+            // Add the Log picture
+            wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPicTable = oDoc.Tables.Add(wrdRng, 1, 1, ref oMissing, ref oMissing);
+            oPicTable.Range.InsertParagraphBefore();
+            oPicTable.Range.ParagraphFormat.SpaceAfter = 6;
+            oPicTable.Cell(1, 1).Range.InlineShapes.AddPicture(logPic, oMissing, oMissing, oMissing);
+            //oPicTable.Columns[1].Width = oWord.InchesToPoints(4); // Change width of columns 1
+            oPicTable.Borders.Enable = 1;
+
+            // Insert a description of the picture
+            Microsoft.Office.Interop.Word.Paragraph oPara17;
+            oRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara17 = oDoc.Content.Paragraphs.Add(ref oRng);
+            oPara17.Range.Text = "Log Group";
+            oPara17.Range.Font.Bold = 0;
+            oPara17.Range.Font.Italic = 1;
+            oPara17.Format.SpaceAfter = 24;
+            oPara17.Range.InsertParagraphAfter();
 
             // Insert a 5 x 2 table, fill it with data, and change the column widths
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
@@ -1029,41 +1086,6 @@ namespace DCS_Configuration_Tool
             oTable.Cell(2, 1).Range.Text = "This button will save everything recorded in the list box to a long file in the General Atomics directory";
             oTable.Cell(2, 2).Range.Text = "This button will clear all text from the list box.";
 
-
-            /* Insert a chart
-            Microsoft.Office.Interop.Word.InlineShape oShape;
-            object oClassType = "MSGraph.Chart.8";
-            wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
-            oShape = wrdRng.InlineShapes.AddOLEObject(ref oClassType, ref oMissing,
-                        ref oMissing, ref oMissing, ref oMissing,
-                        ref oMissing, ref oMissing, ref oMissing);
-
-            // Demonstrate use of late bound oChart and oChartApp objects to manipulate the chart object with MSGraph
-            object oChart;
-            object oChartApp;
-            oChart = oShape.OLEFormat.Object;
-            oChartApp = oChart.GetType().InvokeMember("Application",
-                System.Reflection.BindingFlags.GetProperty, null, oChart, null);
-
-            // Change the chart type to line
-            object[] Parameters = new object[1];
-            Parameters[0] = 4; // xlLine = 4 
-            oChart.GetType().InvokeMember("ChartType", System.Reflection.BindingFlags.SetProperty,
-                null, oChart, Parameters);
-
-            // Update the chart image and quit MSGraph
-            oChartApp.GetType().InvokeMember("Update", System.Reflection.BindingFlags.InvokeMethod,
-                    null, oChartApp, null);
-            oChartApp.GetType().InvokeMember("Quit", System.Reflection.BindingFlags.InvokeMethod,
-                    null, oChartApp, null);
-
-            // ... If desired, you can procees from here using the Microsoft Graph Object model on 
-            // the oChart and oChartApp objects to make additional changes to the chart
-
-            // Set the width of the chart
-            oShape.Width = oWord.InchesToPoints(6.25f);
-            oShape.Height = oWord.InchesToPoints(3.57f);
-            */
 
             // Add text after the chart
             wrdRng = oDoc.Bookmarks.get_Item(ref oEndOfDoc).Range;
