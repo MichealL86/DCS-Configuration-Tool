@@ -891,6 +891,25 @@ namespace DCS_Configuration_Tool
             log.Close();
         }
 
+        public static byte[] ExtractResource(String filename, String location)
+        {
+            System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+            using (Stream resFilestream = a.GetManifestResourceStream(filename))
+            {
+                if (resFilestream == null) return null;
+                BinaryReader br = new BinaryReader(resFilestream);
+                FileStream fs = new FileStream(location, FileMode.Create);
+                BinaryWriter bw = new BinaryWriter(fs);
+                byte[] ba = new byte[resFilestream.Length];
+                resFilestream.Read(ba, 0, ba.Length);
+                bw.Write(ba);
+                br.Close();
+                bw.Close();
+                resFilestream.Close();
+                return ba;
+            }
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -1368,22 +1387,25 @@ namespace DCS_Configuration_Tool
 
         private void formHelpToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
-            Assembly thisAssembly = Assembly.GetExecutingAssembly();
-
-            string wordHelpFile = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\DCS Configuration Use.docx";
-            var regWord = Registry.ClassesRoot.OpenSubKey("Word.Application");
-
-            if (regWord == null)
+            try
             {
-             
-               // Process.Start(wordHelpFile);
-            }
-            else
-            {
-                System.IO.Stream resourceStream = thisAssembly.GetManifestResourceStream("DCS_Configuration_Use.docx");
+                string wordHelpFile = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\DCS Configuration Use.docx";
+                var regWord = Registry.ClassesRoot.OpenSubKey("Word.Application");
+
+                if (regWord == null)
+                {
+
                     // Process.Start(wordHelpFile);
-
+                }
+                else
+                {
+                    ExtractResource("DCS_Configuration_Use", "Properties.Resources.DCS_Configuration_Use");
+                    
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Error accessing resources!");
             }
 
 
