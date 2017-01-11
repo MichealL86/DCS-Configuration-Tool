@@ -61,12 +61,11 @@ namespace DCS_Configuration_Tool.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
+        ///   Looks up a localized string similar to PK!™æ2ýÔ0[Content_Types].xml ¢(  [rest of string was truncated]&quot;;.
         /// </summary>
-        public static byte[] DCS_Configuration_Use {
+        public static string DCS_Configuration_Use {
             get {
-                object obj = ResourceManager.GetObject("DCS_Configuration_Use", resourceCulture);
-                return ((byte[])(obj));
+                return ResourceManager.GetString("DCS_Configuration_Use", resourceCulture);
             }
         }
         

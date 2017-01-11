@@ -891,23 +891,9 @@ namespace DCS_Configuration_Tool
             log.Close();
         }
 
-        public static byte[] ExtractResource(String filename, String location)
+        public void ExtractResource(String filename)
         {
-            System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-            using (Stream resFilestream = a.GetManifestResourceStream(filename))
-            {
-                if (resFilestream == null) return null;
-                BinaryReader br = new BinaryReader(resFilestream);
-                FileStream fs = new FileStream(location, FileMode.Create);
-                BinaryWriter bw = new BinaryWriter(fs);
-                byte[] ba = new byte[resFilestream.Length];
-                resFilestream.Read(ba, 0, ba.Length);
-                bw.Write(ba);
-                br.Close();
-                bw.Close();
-                resFilestream.Close();
-                return ba;
-            }
+
         }
 
         public Form1()
@@ -1385,12 +1371,33 @@ namespace DCS_Configuration_Tool
 
         }
 
+        public static MemoryStream CopyToMemory(Stream input)
+        {
+            // It won't matter if we throw an exception during this method;
+            // we don't *really* need to dispose of the MemoryStream, and the
+            // caller should dispose of the input stream
+            MemoryStream ret = new MemoryStream();
+
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                ret.Write(buffer, 0, bytesRead);
+            }
+            // Rewind ready for reading (typical scenario)
+            ret.Position = 0;
+            return ret;
+        }
+
         private void formHelpToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                string wordHelpFile = @"C:\Users\leatmi\Documents\Visual Studio 2015\Projects\DCS Configuration Tool\DCS Configuration Use.docx";
+
+                
                 var regWord = Registry.ClassesRoot.OpenSubKey("Word.Application");
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string wordHelpFile = desktop + @"\Check Here.docx";
 
                 if (regWord == null)
                 {
@@ -1399,8 +1406,18 @@ namespace DCS_Configuration_Tool
                 }
                 else
                 {
-                    ExtractResource("DCS_Configuration_Use", "Properties.Resources.DCS_Configuration_Use");
-                    
+                    var myFile = Properties.Resources.DCS_Configuration_Use;
+                    var thisAssembly = Assembly.GetExecutingAssembly();
+                    //var manifestFile = thisAssembly.GetManifestResourceStream("DCS_Configuration_Tool.Resources.DCS Configuration Use.docx");
+                    FileStream thisFile = new FileStream(desktop + @"\Check Here.docx", FileMode.OpenOrCreate);
+
+                    using (Stream resFilestream = thisAssembly.GetManifestResourceStream("DCS_Configuration_Tool.Resources.DCS Configuration Use.docx"))
+                    {
+                        resFilestream.CopyTo(thisFile);
+                        Process.Start(wordHelpFile);
+                        
+                    }                 
+
                 }
             }
             catch
