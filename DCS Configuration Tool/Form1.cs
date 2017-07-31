@@ -745,6 +745,8 @@ namespace DCS_Configuration_Tool
 
         public void DeleteOldDirectories()
         {
+            SetText("Deleting all current backups in " + path);
+
             // This is used to find all Folders that end in a date and delete them
             foreach (string delDir in appDirs)
             {
@@ -771,7 +773,16 @@ namespace DCS_Configuration_Tool
                         continue;
                     }
                 }
+
+                // Check to see if the ISM_Sim directory exists. If so delete it.
+                if (Directory.Exists(path + "/ISM_Sim"))
+                {
+                    SetText("The directory ISM_Sim exist. Removing this directory to reduce conflicts");      
+                    Directory.Delete(path + @"\ISM_Sim", true);
+                }
             }
+
+            SetText(string.Empty);
         }
 
         public void FindDrive()
@@ -783,6 +794,17 @@ namespace DCS_Configuration_Tool
                 rootDirectory = removableDrive.RootDirectory;
                 string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
 
+                string ISM_Exist = Path.Combine(rootDirectory.Name, @"4WS\ISM_Sim").ToString();
+                string drive_root = Path.Combine(rootDirectory.Name, @"ISM_Sim").ToString();
+
+                //If ISM_Sim is found in the 4WS on thumb drive move it to the root of the drive
+                if (Directory.Exists(ISM_Exist))
+                {
+                    SetText("Found ISM_Sim in " + rootDirectory.FullName + @"\4WS");
+                    SetText("Move the ISM_Sim Directory to the root of the drive and install manually to continue");
+                    Directory.Move(ISM_Exist, drive_root);
+                }
+
                 new Microsoft.VisualBasic.Devices.Computer().
                     FileSystem.CopyDirectory(monitoredDirectory, path);
             }
@@ -790,6 +812,8 @@ namespace DCS_Configuration_Tool
 
         public void RenameCurrentDirectories( string[] replaceDir)
         {
+            SetText("Backing up current directories in " + path);
+
             // While the RegexEx mvDir is successful,
             // rename the current folders used for the simulators
             foreach (string repDir in replaceDir)
@@ -811,10 +835,13 @@ namespace DCS_Configuration_Tool
                     mvDir = mvDir.NextMatch();
                 }
             }
+
+            SetText(string.Empty);
         }
 
         public void updateApps()
         {
+
 
             DeleteOldDirectories();
 
@@ -830,7 +857,7 @@ namespace DCS_Configuration_Tool
 
             foreach (string thumbDir in Directory.GetDirectories(Path.Combine(rootDirectory.Name, "4WS")))
             {
-                SetText("Updating Application from " + thumbDir);
+                    SetText("Updating Application from " + thumbDir);
             }
 
             // Move old AEC's and ID folder to backup DCS folder
