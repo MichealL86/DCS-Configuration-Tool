@@ -130,5 +130,10 @@ namespace DCS_Configuration_Tool
         {
 
         }
+
+        private void labelVersion_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
