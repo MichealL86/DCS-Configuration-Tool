@@ -15,7 +15,7 @@ namespace DCS_Configuration_Tool
             InitializeComponent();
             this.Text = String.Format("About {0}", AssemblyTitle);
             this.labelProductName.Text = AssemblyProduct;
-            this.labelVersion.Text = "V1.0";
+            this.labelVersion.Text = "V1.0.1.0";
             this.labelCopyright.Text = "Created by: Michael A Leath SW Engineer I";
             this.labelCompanyName.Text = "General Atomics";
             this.textBoxDescription.Text = "This tool is used to update DCS simulator applications, start/stop the applications, enable/disable LANs, check IP status, setup IP network configurations, and retain logs of each setup";
