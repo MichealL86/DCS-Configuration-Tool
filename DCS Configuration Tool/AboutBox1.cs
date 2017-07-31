@@ -125,5 +125,10 @@ namespace DCS_Configuration_Tool
         {
 
         }
+
+        private void AboutBox1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

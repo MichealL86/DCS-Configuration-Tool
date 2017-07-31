@@ -11,21 +11,15 @@ using System.Net.NetworkInformation;
 using System.ComponentModel;
 using System.Threading;
 using System.Drawing;
-using Microsoft.Office.Interop.Word;
 using Microsoft.Win32;
 using System.Reflection;
-using Novacode;
 
 namespace DCS_Configuration_Tool
 {
-
-
-
     public partial class Form1 : Form
     {
         delegate void SetTextCallback(string text);
-
-
+ 
         string aecPath = @"C:\";
         static string path = @"C:\Program Files (x86)\General Atomics";
 
@@ -35,27 +29,47 @@ namespace DCS_Configuration_Tool
         int ipCount;
         DirectoryInfo rootDirectory;
 
+        // File name and location for logging information
         string logName = string.Format("\\DCSLog_{0:MMddyyyy}.txt", DateTime.Now);
+
+        // Strings to setup BSC variations of the BSCSimulator.exe.config file
         string bscConfigPath = @"C:\Program Files (x86)\General Atomics\BSCSimulator\BSCSimulator.exe.config";
         string fullBSCExeConfig = "		<add key=\"countAECs\" value=\"0\"/>";
         string jctsBSCExeConfig = "     <add key=\"CountAECs\" value=\"4\"/> ";
         string nonJctsBSCExeConfig = " 		<add key=\"countAECs\" value=\"1\"/>";
         string jctsBSCAddKey = "		<add key=\"0\" value=\"BSC0\"/>";
         string nonJctsBSCAddKey = "		<add key=\"0\" value=\"BSC1\"/>";
+        string enableBSCWire1 = "<add key=\"0\" value=\"BSC0\"/>";
+        string enableBSCWire2 = "<add key=\"1\" value=\"BSC0\"/>";
+        string enableBSCWire3 = "<add key=\"2\" value=\"BSC0\"/>";
+        string enableBSCWire4 = "<add key=\"3\" value=\"BSC0\"/>";
+        string disableBSCWire1 = "<add key=\"0\" value=\"BSC1\"/>";
+        string disableBSCWire2 = "<add key=\"1\" value=\"BSC2\"/>";
+        string disableBSCWire3 = "<add key=\"2\" value=\"BSC3\"/>";
+        string disableBSCWire4 = "<add key=\"3\" value=\"BSC4\"/>";
 
+        // Strings to setup AEC variations of the DCSSimulator.exe.config file
         string aecConfigPath = @"C:\Program Files (x86)\General Atomics\DCS_Sim\DCSSimulator.exe.config";
         string fullAECExeConfig = "    <add key=\"countAECs\" value=\"0\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
         string jctsAECExeConfig = "    <add key=\"countAECs\" value=\"4\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
         string nonJctsAECExeconfig = "    <add key=\"countAECs\" value=\"1\"/> <!-- Set the number to disable the AECs from 0 thru 3 -->";
         string jctsAECAddKey = "    <add key=\"0\" value=\"AEC0\"/>";
         string nonJctsAECAddKey = "    <add key=\"0\" value=\"AEC1\"/>";
+        string enableAECWire1 ="<add key=\"0\" value=\"AEC0\"/>";
+        string enableAECWire2 = "<add key=\"1\" value=\"AEC0\"/>";
+        string enableAECWire3 = "<add key=\"2\" value=\"AEC0\"/>";
+        string enableAECWire4 = "<add key=\"3\" value=\"AEC0\"/>";
+        string disableAECWire1 ="<add key=\"0\" value=\"AEC1\"/>";
+        string disableAECWire2 = "<add key=\"1\" value=\"AEC2\"/>";
+        string disableAECWire3 = "<add key=\"2\" value=\"AEC3\"/>";
+        string disableAECWire4 = "<add key=\"3\" value=\"AEC4\"/>";
 
         string[] appDirs = Directory.GetDirectories(path);
         string[] desktopLinks;
-        string[] appProcess = { "BSCSimulator", "DCSSimulator", "WindowsFormsApplication1", "MovEmulator",
-                                "ModbusTestClient", "ScsAdmacsSim",  "SwitchSimulator", "UPSSimulator", "ScsDisplay"};
+        string[] appProcess = { "BSCSimulator", "DCSSimulator", "MovEmulator",
+                                "ModbusTestClient", "ScsAdmacsSim", "ScsDisplay", "SwitchSimulator", "UPSSimulator"};
 
-        string[] processName = {"BSC", "DCS", "ISM", "Mov", "Pickle", "ScsD", "ScsA", "Switch", "UPS",
+        string[] processName = {"BSC", "DCS", "Mov", "Pickle", "ScsD", "ScsA", "UPS", "Switch",
                                 "AEC", "ROCS", "SNMP"};
 
 
@@ -66,9 +80,9 @@ namespace DCS_Configuration_Tool
         string mvPattern = ("^([a-zA-Z]:)?(\\\\[^<>:\"/\\\\|?*]+)+\\\\?$");
         string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
+        // Used to hold the location of each 4WS executable
         string[] startApps = {"C:\\Program Files (x86)\\General Atomics\\DCS_Sim\\DCSSimulator.exe", "C:\\Program Files (x86)\\General Atomics\\BSCSimulator\\BSCSimulator.exe",
-            "C:\\Program Files (x86)\\General Atomics\\ISM_Sim\\WindowsFormsApplication1.exe", "C:\\Program Files (x86)\\General Atomics\\PickleSwitchSim\\ModbusTestClient.exe",
-            "C:\\Program Files (x86)\\General Atomics\\ScsAdmacsSim\\ScsAdmacsSim.exe","C:\\Program Files (x86)\\General Atomics\\Switch_Sim\\SwitchSimulator.exe",
+            "C:\\Program Files (x86)\\General Atomics\\PickleSwitchSim\\ModbusTestClient.exe","C:\\Program Files (x86)\\General Atomics\\Switch_Sim\\SwitchSimulator.exe",
             "C:\\Program Files (x86)\\General Atomics\\UPS_Sim\\UPSSimulator.exe", "C:\\Program Files (x86)\\General Atomics\\SCS_Display\\ScsDisplay.exe"};
 
         // String array of IP addresses for HMAP LAN
@@ -85,9 +99,6 @@ namespace DCS_Configuration_Tool
         // String array of IP address for AGS LAN
         string[] ags2IP = { "172.21.1.1", "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.1", "172.21.5.2",
                             "172.21.5.3", "172.21.5.4" };
-
-        // String array of IP addresses for ADMACS LAN
-        string[] admacsIp = { "172.16.4.10", "172.16.4.11" };
 
         // String array of IP addresses for HMAP LAN
         string[] jctsHmapIP = { "172.24.4.1", "172.24.4.2", "172.24.4.7", "172.24.128.10", "172.24.128.11",
@@ -107,11 +118,14 @@ namespace DCS_Configuration_Tool
 
         // String array of IP addresses for AGS LAN
         string[] njctsAgs1IP = { "172.20.1.2", "172.20.1.3", "172.20.1.4", "172.20.5.2", "172.20.5.3", "172.20.5.4" };
-
-        // String array of IP addresses for AGS LAN
         string[] njctsAgs2IP = { "172.21.1.2", "172.21.1.3", "172.21.1.4", "172.21.5.2", "172.21.5.3", "172.21.5.4" };
 
-        
+        // Wire AGS LAN 1/2 IP addresses
+        string[] wire1AGS = { "172.20.1.1", "172.20.5.1", "172.21.1.1", "172.21.5.1" };
+        string[] wire2AGS = { "172.20.1.2", "172.20.5.2", "172.21.1.2", "172.21.5.2" };
+        string[] wire3AGS = { "172.20.1.3", "172.20.5.3", "172.21.1.3", "172.21.5.3" };
+        string[] wire4AGS = { "172.20.1.4", "172.20.5.4", "172.21.1.4", "172.21.5.4" };
+
         private void SetText(string text)
         {
             if (this.listBox1.InvokeRequired)
@@ -350,14 +364,6 @@ namespace DCS_Configuration_Tool
 
                 SetText(String.Empty);
 
-                SetText("ADMACS IP Configuration:");
-                SetText("-------------------------------------------------------");
-                deleteIP(checkedListBox1.Items[3], admacsIp);
-                SetText(String.Empty);
-                addIP(checkedListBox1.Items[3], admacsIp);
-
-                SetText(String.Empty);
-
                 // Modify the .exe.config file for the BSC so that it works correctly
                 SetText("Configuring the BSCSimulator.exe.config file");
                 String fullBSCtext = System.IO.File.ReadAllText(bscConfigPath);
@@ -404,14 +410,6 @@ namespace DCS_Configuration_Tool
 
                 SetText(String.Empty);
 
-                SetText("ADMACS IP Configuration:");
-                SetText("-------------------------------------------------------");
-                deleteIP(checkedListBox1.Items[3], admacsIp);
-                SetText(String.Empty);
-                addIP(checkedListBox1.Items[3], admacsIp);
-
-                SetText(String.Empty);
-
                 // Modify the .exe.config file for the BSC so that it works correctly
                 SetText("Configuring the BSCSimulator.exe.config file");
                 String jctsBSCtext = System.IO.File.ReadAllText(bscConfigPath);
@@ -454,14 +452,6 @@ namespace DCS_Configuration_Tool
                 deleteIP(checkedListBox1.Items[2], ags2IP);
                 SetText(String.Empty);
                 addIP(checkedListBox1.Items[2], njctsAgs2IP);
-
-                SetText(String.Empty);
-
-                SetText("ADMACS IP Configuration:");
-                SetText("-------------------------------------------------------");
-                deleteIP(checkedListBox1.Items[3], admacsIp);
-                SetText(String.Empty);
-                addIP(checkedListBox1.Items[3], admacsIp);
 
                 SetText(String.Empty);
 
@@ -698,22 +688,14 @@ namespace DCS_Configuration_Tool
                 while (checkDir.Success)
                 {
 
-                    if (appName[count] == "WindowsFormsApplication1")
-                    {
-                        shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\ISM_Sim" + ".lnk";
-                        //listBox1.Items.Add("Created shortcut " + shortcutAddress);
-                        SetText("Created shortcut " + shortcutAddress);
-                    }
-                    else if (appName[count] == "ModbusTestClient")
+                    if (appName[count] == "ModbusTestClient")
                     {
                         shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\PickleSwitchSim" + ".lnk";
-                        //listBox1.Items.Add("Created shortcut " + shortcutAddress);
                         SetText("Created shortcut " + shortcutAddress);
                     }
                     else
                     {
                         shortcutAddress = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + @"\" + appName[count] + ".lnk";
-                        //listBox1.Items.Add("Created shortcut " + shortcutAddress);
                         SetText("Created shortcut " + shortcutAddress);
                     }
 
@@ -736,7 +718,6 @@ namespace DCS_Configuration_Tool
 
                 foreach (string link in delLink)
                 {
-                    //listBox1.Items.Add("Deleting " + link);
                     SetText("Deleting " + link);
 
                     System.IO.File.Delete(link);
@@ -751,7 +732,6 @@ namespace DCS_Configuration_Tool
             using (Graphics gr = progressBar1.CreateGraphics())
             {
                 progressBar1.Refresh();
-                //prgfrm.progressBar1.Refresh();
                 gr.DrawString(text,
                     SystemFonts.DefaultFont,
                     Brushes.Black,
@@ -759,19 +739,12 @@ namespace DCS_Configuration_Tool
                                 SystemFonts.DefaultFont).Width / 2.0F),
                                 progressBar1.Height / 2 - (gr.MeasureString(text,
                                 SystemFonts.DefaultFont).Height / 2.0F)));
-
-                    //new PointF(prgfrm.progressBar1.Width / 2 - (gr.MeasureString(text,
-                    //            SystemFonts.DefaultFont).Width / 2.0F),
-                    //            prgfrm.progressBar1.Height / 2 - (gr.MeasureString(text,
-                    //            SystemFonts.DefaultFont).Height / 2.0F)));
-
             }
             System.Windows.Forms.Application.DoEvents();
         }
 
-        public void updateApps()
+        public void DeleteOldDirectories()
         {
-            
             // This is used to find all Folders that end in a date and delete them
             foreach (string delDir in appDirs)
             {
@@ -799,14 +772,27 @@ namespace DCS_Configuration_Tool
                     }
                 }
             }
+        }
 
-            // Used to refresh the Directory listing to current status
-            string[] repDirs = Directory.GetDirectories(path);
+        public void FindDrive()
+        {
+            // Used to search any given removable drive (USB) that is mounted
+            foreach (DriveInfo removableDrive in DriveInfo.GetDrives().Where(
+                         drive => drive.DriveType == DriveType.Removable && drive.IsReady))
+            {
+                rootDirectory = removableDrive.RootDirectory;
+                string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
 
+                new Microsoft.VisualBasic.Devices.Computer().
+                    FileSystem.CopyDirectory(monitoredDirectory, path);
+            }
+        }
 
+        public void RenameCurrentDirectories( string[] replaceDir)
+        {
             // While the RegexEx mvDir is successful,
             // rename the current folders used for the simulators
-            foreach (string repDir in repDirs)
+            foreach (string repDir in replaceDir)
             {
                 // Regular expression with the mvPattern for currently used folders
                 Match mvDir = Regex.Match(repDir, mvPattern);
@@ -825,22 +811,22 @@ namespace DCS_Configuration_Tool
                     mvDir = mvDir.NextMatch();
                 }
             }
+        }
+
+        public void updateApps()
+        {
+
+            DeleteOldDirectories();
+
+            // Used to refresh the Directory listing to current status
+            string[] repDirs = Directory.GetDirectories(path);
+
+            RenameCurrentDirectories(repDirs);
 
             // Used to refresh the Directory listing to current status
             string[] cpDirs = Directory.GetDirectories(path);
 
-            // Used to search any given removable drive (USB) that is mounted
-            foreach (DriveInfo removableDrive in DriveInfo.GetDrives().Where(
-                         drive => drive.DriveType == DriveType.Removable && drive.IsReady))
-            {
-                rootDirectory = removableDrive.RootDirectory;
-                string monitoredDirectory = Path.Combine(rootDirectory.FullName, "4WS");
-
-                new Microsoft.VisualBasic.Devices.Computer().
-                    FileSystem.CopyDirectory(monitoredDirectory, path);
-
-               
-            }
+            FindDrive();
 
             foreach (string thumbDir in Directory.GetDirectories(Path.Combine(rootDirectory.Name, "4WS")))
             {
@@ -891,11 +877,6 @@ namespace DCS_Configuration_Tool
             log.Close();
         }
 
-        public void ExtractResource(String filename)
-        {
-
-        }
-
         public Form1()
         {
             InitializeComponent();
@@ -911,7 +892,7 @@ namespace DCS_Configuration_Tool
             for (int i = 1; i <= 100; i++)
             {
                 // Wait 100 milliseconds
-                Thread.Sleep(60);
+                Thread.Sleep(70);
 
                 // Report progress
                 backgroundWorker1.ReportProgress(i);
@@ -1054,43 +1035,31 @@ namespace DCS_Configuration_Tool
                     Process.Start(startApps[1]);
                 }
 
-                if (ismChkBx.Checked)
+                if (pickleChkBx.Checked)
                 {
                     SetText("Starting " + startApps[2]);
                     Process.Start(startApps[2]);
                 }
 
-                if (pickleChkBx.Checked)
+                if (switchChkBx.Checked)
                 {
                     SetText("Starting " + startApps[3]);
                     Process.Start(startApps[3]);
                 }
 
-                if (scsAChkBx.Checked)
+                if (upsChkBx.Checked)
                 {
                     SetText("Starting " + startApps[4]);
                     Process.Start(startApps[4]);
                 }
 
-                if (switchChkBx.Checked)
+                if (scsDChkBx.Checked)
                 {
                     SetText("Starting " + startApps[5]);
                     Process.Start(startApps[5]);
                 }
 
-                if (upsChkBx.Checked)
-                {
-                    SetText("Starting " + startApps[6]);
-                    Process.Start(startApps[6]);
-                }
-
-                if (scsDChkBx.Checked)
-                {
-                    SetText("Starting " + startApps[7]);
-                    Process.Start(startApps[7]);
-                }
-
-                if (!aecChkBx.Checked && !bscChkBx.Checked && !ismChkBx.Checked && !pickleChkBx.Checked && !scsAChkBx.Checked
+                if (!aecChkBx.Checked && !bscChkBx.Checked && !pickleChkBx.Checked 
                     && !scsDChkBx.Checked && !switchChkBx.Checked && !upsChkBx.Checked)
                 {
                     MessageBox.Show("Please select the simulators to start");
@@ -1151,7 +1120,7 @@ namespace DCS_Configuration_Tool
             SetText(String.Empty);
         }
 
-        // Empty, not used
+        // Empty
         private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
@@ -1238,12 +1207,6 @@ namespace DCS_Configuration_Tool
                     ipConnection(ags2IP);
 
                     listBox1.Items.Add(String.Empty);
-
-                    listBox1.Items.Add("ADMACS IP Check:");
-                    listBox1.Items.Add("-------------------------------------------------------");
-                    ipConnection(admacsIp);
-
-                    listBox1.Items.Add(String.Empty);
                 } 
                 else if (radioButton2.Checked)
                 {
@@ -1264,12 +1227,6 @@ namespace DCS_Configuration_Tool
                     ipConnection(jctsAgs2IP);
 
                     listBox1.Items.Add(String.Empty);
-
-                    listBox1.Items.Add("ADMACS IP Check:");
-                    listBox1.Items.Add("-------------------------------------------------------");
-                    ipConnection(admacsIp);
-
-                    listBox1.Items.Add(String.Empty);
                 }                
                 else if (radioButton3.Checked)
                 {
@@ -1288,12 +1245,6 @@ namespace DCS_Configuration_Tool
                     listBox1.Items.Add("NON-JCTS AGS 2 IP Check:");
                     listBox1.Items.Add("-------------------------------------------------------");
                     ipConnection(njctsAgs2IP);
-
-                    listBox1.Items.Add(String.Empty);
-
-                    listBox1.Items.Add("ADMACS IP Check:");
-                    listBox1.Items.Add("-------------------------------------------------------");
-                    ipConnection(admacsIp);
 
                     listBox1.Items.Add(String.Empty);
                 }
@@ -1337,25 +1288,19 @@ namespace DCS_Configuration_Tool
             {
                 aecChkBx.Checked = true;
                 bscChkBx.Checked = true;
-                ismChkBx.Checked = true;
                 pickleChkBx.Checked = true;
                 switchChkBx.Checked = true;
                 upsChkBx.Checked = true;
-                scsAChkBx.Checked = true;
                 scsDChkBx.Checked = true;
-                movChkBx.Checked = true;
             }
             else if (allChkBx.Checked == false)
             {
                 aecChkBx.Checked = false;
                 bscChkBx.Checked = false;
-                ismChkBx.Checked = false;
                 pickleChkBx.Checked = false;
                 switchChkBx.Checked = false;
                 upsChkBx.Checked = false;
-                scsAChkBx.Checked = false;
                 scsDChkBx.Checked = false;
-                movChkBx.Checked = false;
             }
             
 
@@ -1397,23 +1342,21 @@ namespace DCS_Configuration_Tool
                 
                 var regWord = Registry.ClassesRoot.OpenSubKey("Word.Application");
                 string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                string wordHelpFile = desktop + @"\Check Here.docx";
+                string wordHelpFile = path + @"\Help.docx";
 
-                if (regWord == null)
+                if (System.IO.File.Exists(wordHelpFile))
                 {
-
-                    // Process.Start(wordHelpFile);
+                    Process.Start(wordHelpFile);
                 }
                 else
                 {
-                    var myFile = Properties.Resources.DCS_Configuration_Use;
                     var thisAssembly = Assembly.GetExecutingAssembly();
-                    //var manifestFile = thisAssembly.GetManifestResourceStream("DCS_Configuration_Tool.Resources.DCS Configuration Use.docx");
-                    FileStream thisFile = new FileStream(desktop + @"\Check Here.docx", FileMode.OpenOrCreate);
+                    FileStream thisFile = new FileStream(wordHelpFile, FileMode.OpenOrCreate);
 
                     using (Stream resFilestream = thisAssembly.GetManifestResourceStream("DCS_Configuration_Tool.Resources.DCS Configuration Use.docx"))
                     {
                         resFilestream.CopyTo(thisFile);
+                        thisFile.Close();
                         Process.Start(wordHelpFile);
                         
                     }                 
@@ -1439,6 +1382,854 @@ namespace DCS_Configuration_Tool
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             
+        }
+
+        private void checkBox4_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        // Used to activate or disable any wire
+        private void EnableWire(object sender, EventArgs e)
+        {
+            this.UpdateSims.Enabled = false;
+            this.wireButton.Enabled = false;
+            this.button1.Enabled = false;
+            this.button2.Enabled = false;
+            this.button3.Enabled = false;
+            this.button4.Enabled = false;
+            this.button5.Enabled = false;
+
+            SetText("-------------------------------------------------------------------");
+            SetText("Date Time:" + DateTime.Now);
+            SetText(String.Empty);
+            string addIP = string.Empty;
+            SetText("           WIRE CONFIGURATION");
+            SetText(String.Empty);
+
+            try
+            {
+                // Check the wire 1 checkbox to determine enabling/disabling of wire and IP address
+                if (wire1.Checked)
+                {
+                    SetText("           Enabling wire # 1");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the DCS so that it enables wire 1 
+                    String wire1DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire1DCSText = wire1DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire1DCSText = wire1DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire1DCSText = wire1DCSText.Replace(disableAECWire1, enableAECWire1);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire1DCSText);
+
+
+                    // Modify the .exe.config file for the BSC so that it enables wire 1                    
+                    String wire1BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire1BSCText = wire1BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire1BSCText = wire1BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire1BSCText = wire1BSCText.Replace(disableBSCWire1, enableBSCWire1);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire1BSCText);
+
+                    // Check to if wire 1 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);           
+
+                        foreach (string ip in wire1AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+
+                            if (reply.Status.ToString() == "DestinationHostUnreachable" || reply.Status.ToString() == "TimedOut")
+                            {
+                                SetText("Could not find " + ip);
+                                SetText("Adding IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if(ip == "172.20.5.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " is set correctly for wire #1");
+                                SetText(String.Empty);
+                            }
+
+                        }
+                    }
+                    catch
+                    {
+                        SetText("Problem adding " + addIP);
+                        SetText(String.Empty);
+                    }
+                }
+                else
+                {
+                    SetText("           Disabling wire # 1");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the DCS so that it enables wire 1
+                    String wire1DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire1DCSText = wire1DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire1DCSText = wire1DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire1DCSText = wire1DCSText.Replace(enableAECWire1, disableAECWire1);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire1DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it enables wire 1                    
+                    String wire1BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire1BSCText = wire1BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire1BSCText = wire1BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire1BSCText = wire1BSCText.Replace(enableBSCWire1, disableBSCWire1);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire1BSCText);
+
+                    // Check to if wire 1 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire1AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+                            if (reply.Status.ToString() == "Success")
+                            {
+                                SetText("Found " + ip);
+                                SetText("Deleting IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.1")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " does not exist for wire #1");
+                            }
+
+                        }
+                    }
+                    catch
+                    {
+                        SetText("Problem removing " + addIP);
+                    }
+                }
+
+                // Check the wire 2 checkbox to determine enabling/disabling of wire and IP address
+                if (wire2.Checked)
+                {
+                    SetText("           Enabling wire # 2");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the BSC so that it works Correctly
+                    String wire2DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire2DCSText = wire2DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire2DCSText = wire2DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire2DCSText = wire2DCSText.Replace(disableAECWire2, enableAECWire2);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire2DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it works correctly
+                    String wire2BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire2BSCText = wire2BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire2BSCText = wire2BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire2BSCText = wire2BSCText.Replace(disableBSCWire2, enableBSCWire2);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire2BSCText);
+
+                    // Check to if wire 2 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire2AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+
+                            if (reply.Status.ToString() == "DestinationHostUnreachable" || reply.Status.ToString() == "TimedOut")
+                            {
+                                SetText("Could not find " + ip);
+                                SetText("Adding IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " is set correctly for wire #2");
+                                SetText(String.Empty);
+                            }
+
+                        }
+                    }
+                    catch
+                    {
+                        SetText("Problem adding " + addIP);
+                        SetText(String.Empty);
+                    }
+                }
+                else
+                {
+                    SetText("           Disabling wire # 2");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the DCS so that it enables wire 2
+                    String wire2DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire2DCSText = wire2DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire2DCSText = wire2DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire2DCSText = wire2DCSText.Replace(enableAECWire2, disableAECWire2);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire2DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it enables wire 2                    
+                    String wire2BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire2BSCText = wire2BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire2BSCText = wire2BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire2BSCText = wire2BSCText.Replace(enableBSCWire2, disableBSCWire2);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire2BSCText);
+
+                    // Check if wire 2 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire2AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+                            if (reply.Status.ToString() == "Success")
+                            {
+                                SetText("Found " + ip);
+                                SetText("Deleting IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.2")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " does not exist for wire #2");
+                            }
+
+                        }
+                    }
+                    catch
+                    {
+                        SetText("Problem removing " + addIP);
+                    }
+                }
+
+                // Check the wire 3 checkbox to determine enabling/disabling of wire and IP address
+                if (wire3.Checked)
+                {
+                    SetText("           Enabling wire # 3");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the BSC so that it works Correctly
+                    String wire3DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire3DCSText = wire3DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire3DCSText = wire3DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire3DCSText = wire3DCSText.Replace(disableAECWire3, enableAECWire3);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire3DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it works correctly
+                    String wire3BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire3BSCText = wire3BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire3BSCText = wire3BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire3BSCText = wire3BSCText.Replace(disableBSCWire3, enableBSCWire3);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire3BSCText);
+
+                    // Check to if wire 3 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire3AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+
+                            if (reply.Status.ToString() == "DestinationHostUnreachable" || reply.Status.ToString() == "TimedOut")
+                            {
+                                SetText("Could not find " + ip);
+                                SetText("Adding IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " is set correctly for wire #3");
+                                SetText(String.Empty);
+                            }
+
+                        }
+                    }
+                    catch
+                    {
+                        SetText("Problem adding " + addIP);
+                        SetText(String.Empty);
+                    }
+                }
+                else
+                {
+                    SetText("           Disabling wire # 3");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the DCS so that it enables wire 3
+                    String wire3DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire3DCSText = wire3DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire3DCSText = wire3DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire3DCSText = wire3DCSText.Replace(enableAECWire3, disableAECWire3);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire3DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it enables wire 3                    
+                    String wire3BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire3BSCText = wire3BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire3BSCText = wire3BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire3BSCText = wire3BSCText.Replace(enableBSCWire3, disableBSCWire3);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire3BSCText);
+
+                    // Check if wire 3 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire3AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+                            if (reply.Status.ToString() == "Success")
+                            {
+                                SetText("Found " + ip);
+                                SetText("Deleting IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.3")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " does not exist for wire #3");
+
+                            }
+                        }
+
+                    }
+                    catch
+                    {
+                        SetText("Problem removing " + addIP);
+                    }
+                }
+
+                // Check the wire 4 checkbox to determine enabling/disabling of wire and IP address
+                if (wire4.Checked)
+                {
+                    SetText("           Enabling wire # 4");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the BSC so that it works Correctly
+                    String wire4DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire4DCSText = wire4DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire4DCSText = wire4DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire4DCSText = wire4DCSText.Replace(disableAECWire4, enableAECWire4);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire4DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it works correctly
+                    String wire4BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire4BSCText = wire4BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire4BSCText = wire4BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire4BSCText = wire4BSCText.Replace(disableBSCWire4, enableBSCWire4);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire4BSCText);
+
+                    // Check to if wire 4 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire4AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+
+                            if (reply.Status.ToString() == "DestinationHostUnreachable" || reply.Status.ToString() == "TimedOut")
+                            {
+                                SetText("Could not find " + ip);
+                                SetText("Adding IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 add address name=\"{0}\" addr={1} mask=255.255.0.0", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " is set correctly for wire #4");
+                                SetText(String.Empty);
+                            }
+
+                        }
+                    }
+                    catch
+                    {
+                        SetText("Problem adding " + addIP);
+                        SetText(String.Empty);
+                    }
+                }
+                else
+                {
+                    SetText("           Disabling wire # 4");
+                    SetText(String.Empty);
+                    SetText("Configuring the DCSSimulator.exe.config file");
+                    SetText("Configuring the BSCSimulator.exe.config file");
+                    SetText(String.Empty);
+
+                    // Modify the .exe.config file for the DCS so that it enables wire 4
+                    String wire4DCSText = System.IO.File.ReadAllText(aecConfigPath);
+                    wire4DCSText = wire4DCSText.Replace(fullAECExeConfig, jctsAECExeConfig);
+                    wire4DCSText = wire4DCSText.Replace(nonJctsAECExeconfig, jctsAECExeConfig);
+                    wire4DCSText = wire4DCSText.Replace(enableAECWire4, disableAECWire4);
+
+                    System.IO.File.WriteAllText(aecConfigPath, wire4DCSText);
+
+                    // Modify the .exe.config file for the BSC so that it enables wire 4                    
+                    String wire4BSCText = System.IO.File.ReadAllText(bscConfigPath);
+                    wire4BSCText = wire4BSCText.Replace(fullBSCExeConfig, jctsBSCExeConfig);
+                    wire4BSCText = wire4BSCText.Replace(nonJctsBSCExeConfig, jctsBSCExeConfig);
+                    wire4BSCText = wire4BSCText.Replace(enableBSCWire4, disableBSCWire4);
+
+                    System.IO.File.WriteAllText(bscConfigPath, wire4BSCText);
+
+                    // Check if wire 4 IP address exists for AEC and BSC
+                    try
+                    {
+                        listBox1.Items.Add("Checking IP Connections..." + Environment.NewLine);
+
+                        foreach (string ip in wire4AGS)
+                        {
+                            checkIP(ip);
+                            listBox1.Items.Add("IP Addresses: " + ip + "  " + "Status: " + reply.Status.ToString());
+                            if (reply.Status.ToString() == "Success")
+                            {
+                                SetText("Found " + ip);
+                                SetText("Deleting IP address " + ip);
+                                SetText(String.Empty);
+                                addIP = ip;
+
+                                if (ip == "172.20.1.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.20.5.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 1", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.1.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                                else if (ip == "172.21.5.4")
+                                {
+                                    ProcessStartInfo psi = new ProcessStartInfo("netsh", string.Format("interface ipv4 delete address name=\"{0}\" addr={1}", "AGS LAN 2", ip));
+                                    Process p = new Process();
+                                    p.StartInfo = psi;
+                                    p.StartInfo.CreateNoWindow = true;
+                                    p.StartInfo.UseShellExecute = false;
+                                    p.Start();
+
+                                    Thread.Sleep(500);
+                                }
+                            }
+                            else
+                            {
+                                listBox1.Items.Add(ip + " does not exist for wire #4");
+
+                            }
+                        }
+
+                    }
+                    catch
+                    {
+                        SetText("Problem removing " + addIP);
+                    }
+                }
+
+                if (!wire1.Checked && !wire2.Checked && !wire3.Checked && !wire4.Checked)
+                {
+                    MessageBox.Show("Please select a wire to enable");
+                }
+
+                SetText(String.Empty);
+            }
+            catch
+            {
+                listBox1.Items.Add("No wires have been selected to enable");
+            }
+
+            this.UpdateSims.Enabled = true;
+            this.wireButton.Enabled = true;
+            this.button1.Enabled = true;
+            this.button2.Enabled = true;
+            this.button3.Enabled = true;
+            this.button4.Enabled = true;
+            this.button5.Enabled = true;
+
+            SetText("Wire configuration complete!");
+            SetText(String.Empty);
         }
     }
 
